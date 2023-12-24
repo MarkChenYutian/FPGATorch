@@ -18,6 +18,7 @@ Output
 **Math Operation**
   
 Formula
+
 $$
 C_{ijk} = B_{ijk} + A_{ijk}
 $$
@@ -39,6 +40,7 @@ Output
 **Math Operation**
 
 Formula
+
 $$
 B_{ijk} = cA_{ijk}
 $$
@@ -59,6 +61,7 @@ Output
 **Math Operation**
 
 Formula
+
 $$
 B_{ijk} = \frac{1}{c}A_{ijk}
 $$
@@ -78,6 +81,7 @@ Output
 **Math Operation**
 
 Formula
+
 $$
 B_{ijk} = \exp(A_{ijk})
 $$
@@ -97,6 +101,7 @@ Output
 **Math Operation**
 
 Formula
+
 $$
 B_{ijk} = \ln(A_{ijk})
 $$
@@ -119,6 +124,7 @@ Output
 **Math Operation**
 
 Formula
+
 $$
 C_{ijk} = \sum_{p=1}^{n}{A_{ijp}B_{ipk}}
 $$
@@ -138,6 +144,7 @@ Output
 **Math Operation**
 
 Formula
+
 $$
 B_{ijk} = A_{ikj}
 $$
@@ -159,6 +166,7 @@ Output
 **Math Operation**
 
 Formula
+
 $$
 B_{ij} = \sum_{k=1}^{n}{A_{ijk}}
 $$
