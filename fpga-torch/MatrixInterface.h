@@ -1,29 +1,29 @@
-// Add A (b*m*n) and B (b*m*n) element-wise
-float *MatAdd(float *A, float *B, int b, int m, int n);
+#pragma once
 
-// Multiply A (b*m*n) and scalar c element-wise
-float *ScalarMatMul(float *A, float c, int b, int m, int n);
+struct Tensor {
+    int size[3];
+    float *data;
+};
 
-// Divide A (b*m*n) and scalar c element-wise
-float *ScalarMatDiv(float *A, float c, int b, int m, int n);
+typedef struct Tensor Tensor_t;
 
-// Add A (b*m*n) and scalar c element-wise
-float *ScalarMatAdd(float *A, float c, int b, int m, int n);
+Tensor_t *MatNew(int dim0, int dim1, int dim2);
+void MatFree(Tensor_t *A);
+void MatPrint(Tensor_t *A);
 
-// For every A_ij, turn into (1/A_ij) (not linear algebra inverse, A^{-1})
-float *MatInv(float *A, int b, int m, int n);
+float Get(Tensor_t *A, int dim0, int dim1, int dim2);
+void Set(Tensor_t *A, int dim0, int dim1, int dim2, float value);
 
-// Perform exponentiation (base e) on A (b*m*n) element-wise
-float *MatExp(float *A, int b, int m, int n);
+Tensor_t *MatAdd(Tensor_t *A, Tensor_t *B);
+Tensor_t *MatMul(Tensor_t *A, Tensor_t *B);
+Tensor_t *MatTrans(Tensor_t *A);
 
-// Perform logarithm (base e) on A (b*m*n) element-wise
-float *MatLog(float *A, int b, int m, int n);
+Tensor_t *ScalarMatMul(Tensor_t *A, float scalar);
+Tensor_t *ScalarMatDiv(Tensor_t *A, float scalar);
+Tensor_t *ScalarMatAdd(Tensor_t *A, float scalar);
 
-// Perform matrix multiplication on A (b*m*n) and B (b*n*k)
-float *MatMul(float *A, float *B, int b, int m, int n, int k);
+Tensor_t *ScalarMatInv(Tensor_t *A);
+Tensor_t *ScalarMatExp(Tensor_t *A);
+Tensor_t *ScalarMatLog(Tensor_t *A);
 
-// Perform matrix transpose on A (b*m*n)
-float *MatTrans(float *A, int b, int m, int n);
-
-// Reduction - sum on second axis of A (b*m*n) -> (b*n)
-float *MatReduceSum(float *A, int b, int m, int n);
+Tensor_t *ReduceSum(Tensor_t *A, int dim);
