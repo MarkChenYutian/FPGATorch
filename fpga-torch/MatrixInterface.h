@@ -8,6 +8,7 @@ struct Tensor {
 typedef struct Tensor Tensor_t;
 
 Tensor_t *MatNew(int dim0, int dim1, int dim2);
+Tensor_t *MatNLike(Tensor_t *original, float scalar);
 void MatFree(Tensor_t *A);
 void MatPrint(Tensor_t *A);
 

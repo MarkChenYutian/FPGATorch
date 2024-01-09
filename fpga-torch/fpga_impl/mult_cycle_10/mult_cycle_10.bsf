@@ -1,0 +1,97 @@
+/*
+WARNING: Do NOT edit the input and output ports in this file in a text
+editor if you plan to continue editing the block that represents it in
+the Block Editor! File corruption is VERY likely to occur.
+*/
+/*
+Copyright (C) 2017  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and its AMPP partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel MegaCore Function License Agreement, or other 
+applicable license agreement, including, without limitation, 
+that your use is for the sole purpose of programming logic 
+devices manufactured by Intel and sold by Intel or its 
+authorized distributors.  Please refer to the applicable 
+agreement for further details.
+*/
+(header "symbol" (version "1.2"))
+(symbol
+	(rect 0 0 224 192)
+	(text "mult_cycle_10" (rect 67 0 179 17)(font "Dialog" (font_size 10)))
+	(text "inst" (rect 8 177 25 188)(font "Arial" ))
+	(port
+		(pt 0 48)
+		(input)
+		(text "dataa[31..0]" (rect 0 0 77 13)(font "Dialog" (font_size 8)))
+		(text "dataa[31..0]" (rect 4 35 70 47)(font "Dialog" (font_size 8)))
+		(line (pt 0 48)(pt 80 48)(line_width 3))
+	)
+	(port
+		(pt 0 64)
+		(input)
+		(text "datab[31..0]" (rect 0 0 79 13)(font "Dialog" (font_size 8)))
+		(text "datab[31..0]" (rect 4 51 70 63)(font "Dialog" (font_size 8)))
+		(line (pt 0 64)(pt 80 64)(line_width 3))
+	)
+	(port
+		(pt 0 80)
+		(input)
+		(text "clock" (rect 0 0 34 13)(font "Dialog" (font_size 8)))
+		(text "clock" (rect 4 67 32 79)(font "Dialog" (font_size 8)))
+		(line (pt 0 80)(pt 80 80))
+	)
+	(port
+		(pt 224 48)
+		(output)
+		(text "result[31..0]" (rect 0 0 77 13)(font "Dialog" (font_size 8)))
+		(text "result[31..0]" (rect 151 35 216 47)(font "Dialog" (font_size 8)))
+		(line (pt 224 48)(pt 144 48)(line_width 3))
+	)
+	(port
+		(pt 224 64)
+		(output)
+		(text "nan" (rect 0 0 24 13)(font "Dialog" (font_size 8)))
+		(text "nan" (rect 200 51 219 63)(font "Dialog" (font_size 8)))
+		(line (pt 224 64)(pt 144 64))
+	)
+	(port
+		(pt 224 80)
+		(output)
+		(text "overflow" (rect 0 0 54 13)(font "Dialog" (font_size 8)))
+		(text "overflow" (rect 173 67 219 79)(font "Dialog" (font_size 8)))
+		(line (pt 224 80)(pt 144 80))
+	)
+	(port
+		(pt 224 96)
+		(output)
+		(text "underflow" (rect 0 0 63 13)(font "Dialog" (font_size 8)))
+		(text "underflow" (rect 165 83 219 95)(font "Dialog" (font_size 8)))
+		(line (pt 224 96)(pt 144 96))
+	)
+	(port
+		(pt 224 112)
+		(output)
+		(text "zero" (rect 0 0 28 13)(font "Dialog" (font_size 8)))
+		(text "zero" (rect 197 99 219 111)(font "Dialog" (font_size 8)))
+		(line (pt 224 112)(pt 144 112))
+	)
+	(drawing
+		(text "Clock cycles: 10" (rect 145 130 359 270)(font "Arial" ))
+		(text "Single Precision" (rect 145 146 355 302)(font "Arial" ))
+		(text "Exponent Width: 8" (rect 138 162 352 334)(font "Arial" ))
+		(text "Mantissa Width: 23" (rect 134 178 348 366)(font "Arial" ))
+		(line (pt 80 32)(pt 144 32))
+		(line (pt 144 32)(pt 144 128))
+		(line (pt 80 128)(pt 144 128))
+		(line (pt 80 32)(pt 80 128))
+		(line (pt 0 0)(pt 224 0))
+		(line (pt 224 0)(pt 224 192))
+		(line (pt 0 192)(pt 224 192))
+		(line (pt 0 0)(pt 0 192))
+	)
+)

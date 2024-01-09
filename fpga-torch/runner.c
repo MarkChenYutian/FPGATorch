@@ -1,8 +1,9 @@
-#include <stdio.h>
 #include "MatrixInterface.h"
-#include "CPUMatrix.c"
+#include "Operator.h"
 
 int main() {
+    LinearLayer_t *linear1 = newLinear(2, 3, 4);
+
     Tensor_t *A = MatNew(2, 2, 3);
     Set(A, 0, 0, 0, 1.f);
     Set(A, 0, 0, 1, 2.f);
@@ -11,9 +12,14 @@ int main() {
     Set(A, 0, 1, 1, 5.f);
     Set(A, 0, 1, 2, 6.f);
     MatPrint(A);
-    Tensor_t *B = MatTrans(A);
-    MatPrint(B);
-    Tensor_t *C = MatMul(A, B);
-    MatPrint(C);
+
+    Tensor_t *result = LinearForward(linear1, A);
+    MatPrint(result);
+
+
+    MatFree(A);
+    MatFree(result);
+    LinearFree(linear1);
     return 0;
 }
+

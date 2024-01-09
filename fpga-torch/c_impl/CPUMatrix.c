@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
-#include "MatrixInterface.h"
+#include <stdbool.h>
+#include "../MatrixInterface.h"
 
 #ifdef DEBUG
 #define DBG_ASSERT(arg) assert(arg);
@@ -20,6 +21,12 @@ Tensor_t *MatNew(int dim0, int dim1, int dim2) {
     matrix->size[1] = dim1;
     matrix->size[2] = dim2;
     return matrix;
+}
+
+void MatFree(Tensor_t *mat) {
+    if (mat == NULL) return;
+    free(mat->data);
+    free(mat);
 }
 
 float Get(Tensor_t *A, int dim0, int dim1, int dim2) {
@@ -165,15 +172,31 @@ Tensor_t *MatTrans(Tensor_t *A) {
 }
 
 Tensor_t *ReduceSum(Tensor_t *A, int dim) {
-    Tensor_t *Result = MatNew(A->size[0], 1, A->size[2]);
-    for (int i = 0; i < A->size[0]; i ++) {
-        for (int k = 0; k < A->size[2]; k ++) {
-            float value = 0;
-            for (int j = 0; j < A->size[1]; j ++) {
-                value += Get(A, i, j, k);
+    Tensor_t *Result;
+    if (dim == 0) {
+        Result = MatNew(1, A->size[1], A->size[2]);
+        for (int j = 0; j < A->size[1]; j ++) {
+            for (int k = 0; k < A->size[2]; k ++) {
+                float value = 0;
+                for (int i = 0; i < A->size[0]; i ++) {
+                    value += Get(A, i, j, k);
+                }
+                Set(Result, 0, j, k, value);
             }
-            Set(Result, i, 0, k, value);
         }
+    } else if (dim == 1) {
+        Result = MatNew(A->size[0], 1, A->size[2]);
+        for (int i = 0; i < A->size[0]; i ++) {
+            for (int k = 0; k < A->size[2]; k ++) {
+                float value = 0;
+                for (int j = 0; j < A->size[1]; j ++) {
+                    value += Get(A, i, j, k);
+                }
+                Set(Result, i, 0, k, value);
+            }
+        }
+    } else {
+        assert(false);  // Not yet implemented!
     }
     return Result;
 }
