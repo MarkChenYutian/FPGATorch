@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 struct Tensor {
     int size[3];
     float *data;
@@ -28,3 +30,8 @@ Tensor_t *ScalarMatExp(Tensor_t *A);
 Tensor_t *ScalarMatLog(Tensor_t *A);
 
 Tensor_t *ReduceSum(Tensor_t *A, int dim);
+
+void MatFill_inplace(Tensor_t *A, float scalar);
+
+void save(const std::string &fileName, Tensor_t *A);
+Tensor_t *load(const std::string &fileName);

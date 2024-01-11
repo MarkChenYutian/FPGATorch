@@ -1,12 +1,12 @@
-//
-// Created by Yutian on 1/6/2024.
-//
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <math.h>
-#include <stdbool.h>
+#pragma once
+
+#include <cstdio>
+#include <cassert>
+#include <cmath>
 #include "../MatrixInterface.h"
+#include <iomanip>
+#include <iostream>
+#include <fstream>
 
 #ifdef DEBUG
 #define DBG_ASSERT(arg) assert(arg);
@@ -15,16 +15,30 @@
 #endif
 
 Tensor_t *MatNew(int dim0, int dim1, int dim2) {
-    Tensor_t *matrix = malloc(sizeof(Tensor_t));
-    matrix->data = calloc(sizeof(float), dim0 * dim1 * dim2);
+    auto *matrix = static_cast<Tensor_t *>(malloc(sizeof(Tensor_t)));
+    matrix->data = static_cast<float *>(calloc(sizeof(float), dim0 * dim1 * dim2));
     matrix->size[0] = dim0;
     matrix->size[1] = dim1;
     matrix->size[2] = dim2;
     return matrix;
 }
 
+void MatFill_inplace(Tensor_t *A, float scalar) {
+    for (int i = 0; i < A->size[0]; i ++) {
+        for (int j = 0; j < A->size[1]; j ++) {
+            for (int k = 0; k < A->size[2]; k ++) {
+                Set(A, i, j, k, scalar);
+            }}}
+}
+
+Tensor_t *MatNLike(Tensor_t *original, float scalar) {
+    Tensor_t *result = MatNew(original->size[0], original->size[1], original->size[2]);
+    MatFill_inplace(result, scalar);
+    return result;
+}
+
 void MatFree(Tensor_t *mat) {
-    if (mat == NULL) return;
+    if (mat == nullptr) return;
     free(mat->data);
     free(mat);
 }
@@ -45,7 +59,10 @@ void Set(Tensor_t *A, int dim0, int dim1, int dim2, float value) {
 
 Tensor_t *MatAdd(Tensor_t *A, Tensor_t *B) {
     DBG_ASSERT(A->size[0] == B->size[0]);
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "EmptyDeclOrStmt"
     DBG_ASSERT(A->size[1] == B->size[1]);
+#pragma clang diagnostic pop
     DBG_ASSERT(A->size[2] == B->size[2]);
     Tensor_t *C = MatNew(A->size[0], A->size[1], A->size[2]);
 
@@ -54,7 +71,7 @@ Tensor_t *MatAdd(Tensor_t *A, Tensor_t *B) {
             for (int k = 0; k < A->size[2]; k ++) {
                 float value = Get(A, i, j, k) + Get(B, i, j, k);
                 Set(C, i, j, k, value);
-    }}}
+            }}}
     return C;
 }
 
@@ -214,4 +231,64 @@ void MatPrint(Tensor_t *A) {
         }
         printf("]\n");
     }
+}
+
+void save(const std::string& fileName, Tensor_t *A) {
+    std::ofstream dumpFile;
+    dumpFile.open(fileName, std::ios::trunc);
+    if (!dumpFile.is_open()) {
+        std::cout << "Unable to dump tensor to the file " << fileName << std::endl;
+        return;
+    }
+    dumpFile << "Matrix_Interface\n";
+    dumpFile << "Size Information\n";
+    dumpFile << A->size[0] << "\n";
+    dumpFile << A->size[1] << "\n";
+    dumpFile << A->size[2] << "\n";
+    dumpFile << "Data\n";
+    for (int i = 0; i < A->size[0]; i ++) {
+        for (int j = 0; j < A->size[1]; j ++) {
+            for (int k = 0; k < A->size[2]; k ++) {
+                dumpFile <<  std::fixed << std::setprecision(8) << Get(A, i, j, k) << "\n";
+            }}}
+    dumpFile.close();
+}
+
+Tensor_t *load(const std::string& fileName) {
+    std::ifstream dumpFile;
+    dumpFile.open(fileName, std::ios::in);
+    if (!dumpFile.is_open()) {
+        std::cout << "Unable to read tensor from the file" << fileName << std::endl;
+        return nullptr;
+    }
+    std::string line;
+    getline(dumpFile, line);
+    if (line != "Matrix_Interface" && line != "Matrix_Interface\r") {
+        std::cout << "(Wrong format 1) Unable to read tensor from the file" << fileName << std::endl;
+        return nullptr;
+    }
+
+    getline(dumpFile, line);
+    int size0, size1, size2;
+    getline(dumpFile, line);
+    size0 = std::stoi(line);
+    getline(dumpFile, line);
+    size1 = std::stoi(line);
+    getline(dumpFile, line);
+    size2 = std::stoi(line);
+
+    Tensor_t *A = MatNew(size0, size1, size2);
+
+    getline(dumpFile, line);
+    if (line != "Data" && line != "Data\r") {
+        std::cout << "(Wrong format 2) Unable to read tensor from the file" << fileName << std::endl;
+        return nullptr;
+    }
+    for (int i = 0; i < A->size[0]; i ++) {
+        for (int j = 0; j < A->size[1]; j ++) {
+            for (int k = 0; k < A->size[2]; k ++) {
+                getline(dumpFile, line);
+                Set(A, i, j, k, std::stof(line));
+            }}}
+    return A;
 }
