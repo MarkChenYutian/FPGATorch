@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <memory>
+#include <random>
 
 #ifdef DEBUG
 #define DBG_ASSERT(arg) assert(arg);
@@ -25,9 +26,21 @@ SmartTensor MatNew(int dim0, int dim1, int dim2) {
     return matrix;
 }
 
+SmartTensor MatRandN(int dim0, int dim1, int dim2, float mean, float std) {
+    SmartTensor emptyMat = MatNew(dim0, dim1, dim2);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::normal_distribution<float> dist(mean, std);
+
+    for (int i = 0; i < dim0 * dim1 * dim2; i ++) {
+        emptyMat->data[i] = dist(gen);
+    }
+    return emptyMat;
+}
+
 SmartTensor MatNLike(const SmartTensor& original, float scalar) {
     SmartTensor result = MatNew(original->size[0], original->size[1], original->size[2]);
-    MatFill_inplace(result, scalar);
+    if (scalar != 0.f) MatFill_inplace(result, scalar);
     return result;
 }
 
@@ -52,97 +65,59 @@ void  Set(const SmartTensor& A, int dim0, int dim1, int dim2, float value) {
 }
 
 SmartTensor MatAdd(const SmartTensor& A, const SmartTensor& B) {
-    DBG_ASSERT(A->size[0] == B->size[0]);
-    DBG_ASSERT(A->size[1] == B->size[1]);
-    DBG_ASSERT(A->size[2] == B->size[2]);
-    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
-
-    for (int i = 0; i < A->size[0]; i ++) {
-        for (int j = 0; j < A->size[1]; j ++) {
-            for (int k = 0; k < A->size[2]; k ++) {
-                float value = Get(A, i, j, k) + Get(B, i, j, k);
-                Set(C, i, j, k, value);
-            }}}
-    return C;
+    SmartTensor result = MatNLike(A, 0.f);
+    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
+        result->data[i] = (A->data[i]) + (B->data[i]);
+    }
+    return result;
 }
 
 SmartTensor ScalarMatMul(const SmartTensor& A, float scalar) {
-    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
-
-    for (int i = 0; i < A->size[0]; i ++) {
-        for (int j = 0; j < A->size[1]; j ++) {
-            for (int k = 0; k < A->size[2]; k ++) {
-                float value = Get(A, i, j, k) * scalar;
-                Set(C, i, j, k, value);
-            }}}
-    return C;
+    SmartTensor result = MatNLike(A, 0.f);
+    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
+        result->data[i] = (A->data[i]) * scalar;
+    }
+    return result;
 }
 
 SmartTensor ScalarMatDiv(const SmartTensor& A, float scalar) {
-    DBG_ASSERT(scalar != 0);
-
-    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
-
-    for (int i = 0; i < A->size[0]; i ++) {
-        for (int j = 0; j < A->size[1]; j ++) {
-            for (int k = 0; k < A->size[2]; k ++) {
-                float value = Get(A, i, j, k) / scalar;
-                Set(C, i, j, k, value);
-            }}}
-    return C;
+    SmartTensor result = MatNLike(A, 0.f);
+    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
+        result->data[i] = (A->data[i]) / scalar;
+    }
+    return result;
 }
 
 SmartTensor ScalarMatAdd(const SmartTensor& A, float scalar) {
-    DBG_ASSERT(A->size[0] == B->size[0]);
-    DBG_ASSERT(A->size[1] == B->size[1]);
-    DBG_ASSERT(A->size[2] == B->size[2]);
-    DBG_ASSERT(scalar != 0);
-
-    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
-
-    for (int i = 0; i < A->size[0]; i ++) {
-        for (int j = 0; j < A->size[1]; j ++) {
-            for (int k = 0; k < A->size[2]; k ++) {
-                float value = Get(A, i, j, k) + scalar;
-                Set(C, i, j, k, value);
-            }}}
-    return C;
+    SmartTensor result = MatNLike(A, 0.f);
+    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
+        result->data[i] = A->data[i] + scalar;
+    }
+    return result;
 }
 
 SmartTensor ScalarMatInv(const SmartTensor& A) {
-    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
-
-    for (int i = 0; i < A->size[0]; i ++) {
-        for (int j = 0; j < A->size[1]; j ++) {
-            for (int k = 0; k < A->size[2]; k ++) {
-                float value = 1.f / Get(A, i, j, k);
-                Set(C, i, j, k, value);
-            }}}
-    return C;
+    SmartTensor result = MatNLike(A, 0.f);
+    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
+        result->data[i] = 1/(A->data[i]);
+    }
+    return result;
 }
 
 SmartTensor ScalarMatExp(const SmartTensor& A) {
-    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
-
-    for (int i = 0; i < A->size[0]; i ++) {
-        for (int j = 0; j < A->size[1]; j ++) {
-            for (int k = 0; k < A->size[2]; k ++) {
-                float value = expf(Get(A, i, j, k));
-                Set(C, i, j, k, value);
-            }}}
-    return C;
+    SmartTensor result = MatNLike(A, 0.f);
+    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
+        result->data[i] = expf(A->data[i]);
+    }
+    return result;
 }
 
 SmartTensor ScalarMatLog(const SmartTensor& A) {
-    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
-
-    for (int i = 0; i < A->size[0]; i ++) {
-        for (int j = 0; j < A->size[1]; j ++) {
-            for (int k = 0; k < A->size[2]; k ++) {
-                float value = logf(Get(A, i, j, k));
-                Set(C, i, j, k, value);
-            }}}
-    return C;
+    SmartTensor result = MatNLike(A, 0.f);
+    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
+        result->data[i] = logf(A->data[i]);
+    }
+    return result;
 }
 
 SmartTensor MatMul(const SmartTensor& A, const SmartTensor& B) {
@@ -212,7 +187,7 @@ SmartTensor ReduceSum(const SmartTensor& A, int dim) {
 void MatPrint(const SmartTensor& A) {
     printf("Shape: %d %d %d\n", A->size[0], A->size[1], A->size[2]);
     for (int i = 0; i < A->size[0]; i ++) {
-        printf("[\n");
+        printf("[");
         for (int j = 0; j < A->size[1]; j ++) {
             printf("[");
             for (int k = 0; k < A->size[2]; k ++) {
@@ -220,7 +195,7 @@ void MatPrint(const SmartTensor& A) {
             }
             printf("\b]\n");
         }
-        printf("]\n");
+        printf("]END\n");
     }
 }
 
@@ -285,9 +260,24 @@ SmartTensor load(const std::string& fileName) {
 }
 
 void MatFill_inplace(const SmartTensor& A, float scalar) {
-    for (int i = 0; i < A->size[0]; i ++) {
-        for (int j = 0; j < A->size[1]; j ++) {
-            for (int k = 0; k < A->size[2]; k ++) {
-                Set(A, i, j, k, scalar);
-            }}}
+    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
+        A->data[i] = scalar;
+    }
 }
+
+SmartTensor ScalarGetGTMask(const SmartTensor& A, float scalar) {
+    SmartTensor Mask = MatNLike(A, 0.f);
+    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
+        Mask->data[i] = (A->data[i] > scalar) ? 1.f : 0.f;
+    }
+    return Mask;
+}
+
+SmartTensor MatElementwiseMul(const SmartTensor &A, const SmartTensor &B) {
+    SmartTensor result = MatNLike(A, 0.f);
+    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
+        result->data[i] = A->data[i] * B->data[i];
+    }
+    return result;
+}
+

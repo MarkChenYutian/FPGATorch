@@ -14,11 +14,11 @@ namespace Neural {
         SmartTensor grad_bias;
         SmartTensor ones;
     public:
-        Linear(int size, int in_channel, int out_channel):
+        Linear(int size, int in_channel, int out_channel, float init_std=1.f, float init_mean=0.f):
         input(nullptr), grad_bias(nullptr), grad_weight(nullptr)
         {
-            weight = MatNew(1, in_channel, out_channel);
-            bias = MatNew(1, 1, out_channel);
+            weight = MatRandN(1, in_channel, out_channel, init_mean, init_std);
+            bias = MatRandN(1, 1, out_channel, init_mean, init_std);
             ones = MatNew(1, size, 1);
             MatFill_inplace(ones, 1.f);
         }

@@ -15,9 +15,6 @@ int main() {
 
     optimizer.RegisterModule(&network);
 
-    layer1.loadModule("./Data/linear1_");
-    layer2.loadModule("./Data/linear2_");
-
     for (int i = 0; i < 1000; i ++) {
         SmartTensor input = load("./Data/input_" + std::to_string(i % 10) + ".matrix");
         SmartTensor loss = network.Forward(input);

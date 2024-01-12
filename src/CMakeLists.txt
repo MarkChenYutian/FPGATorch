@@ -19,6 +19,7 @@ add_executable(example-app
         example-app.cpp
         operator/Module.h
         operator/Sequential.h
+        operator/ReLU.h
 )
 
 #target_link_libraries(example-app "${TORCH_LIBRARIES}")

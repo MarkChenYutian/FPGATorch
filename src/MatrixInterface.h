@@ -22,6 +22,7 @@ void  Set(const SmartTensor& A, int dim0, int dim1, int dim2, float value);
 
 SmartTensor MatAdd(const SmartTensor& A, const SmartTensor& B);
 SmartTensor MatMul(const SmartTensor& A, const SmartTensor& B);
+SmartTensor MatElementwiseMul(const SmartTensor& A, const SmartTensor& B);
 SmartTensor MatTrans(const SmartTensor& A);
 
 SmartTensor ScalarMatMul(const SmartTensor& A, float scalar);
@@ -31,8 +32,10 @@ SmartTensor ScalarMatAdd(const SmartTensor& A, float scalar);
 SmartTensor ScalarMatInv(const SmartTensor& A);
 SmartTensor ScalarMatExp(const SmartTensor& A);
 SmartTensor ScalarMatLog(const SmartTensor& A);
+SmartTensor ScalarGetGTMask(const SmartTensor& A, float scalar);
 
 SmartTensor ReduceSum(const SmartTensor& A, int dim);
+
 
 void save(const std::string &fileName, const SmartTensor& A);
 SmartTensor load(const std::string &fileName);
