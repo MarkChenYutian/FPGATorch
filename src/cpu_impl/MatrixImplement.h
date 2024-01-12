@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
+#include <memory>
 
 #ifdef DEBUG
 #define DBG_ASSERT(arg) assert(arg);
@@ -14,8 +15,9 @@
 #define DBG_ASSERT(arg) (void)0;
 #endif
 
-Tensor_t *MatNew(int dim0, int dim1, int dim2) {
-    auto *matrix = static_cast<Tensor_t *>(malloc(sizeof(Tensor_t)));
+
+SmartTensor MatNew(int dim0, int dim1, int dim2) {
+    SmartTensor matrix(new Tensor_t{}, MatFree);
     matrix->data = static_cast<float *>(calloc(sizeof(float), dim0 * dim1 * dim2));
     matrix->size[0] = dim0;
     matrix->size[1] = dim1;
@@ -23,16 +25,8 @@ Tensor_t *MatNew(int dim0, int dim1, int dim2) {
     return matrix;
 }
 
-void MatFill_inplace(Tensor_t *A, float scalar) {
-    for (int i = 0; i < A->size[0]; i ++) {
-        for (int j = 0; j < A->size[1]; j ++) {
-            for (int k = 0; k < A->size[2]; k ++) {
-                Set(A, i, j, k, scalar);
-            }}}
-}
-
-Tensor_t *MatNLike(Tensor_t *original, float scalar) {
-    Tensor_t *result = MatNew(original->size[0], original->size[1], original->size[2]);
+SmartTensor MatNLike(const SmartTensor& original, float scalar) {
+    SmartTensor result = MatNew(original->size[0], original->size[1], original->size[2]);
     MatFill_inplace(result, scalar);
     return result;
 }
@@ -40,31 +34,28 @@ Tensor_t *MatNLike(Tensor_t *original, float scalar) {
 void MatFree(Tensor_t *mat) {
     if (mat == nullptr) return;
     free(mat->data);
-    free(mat);
+    delete mat;
 }
 
-float Get(Tensor_t *A, int dim0, int dim1, int dim2) {
+float Get(const SmartTensor& A, int dim0, int dim1, int dim2) {
     int offset0 = dim0 * A->size[1] * A->size[2];
     int offset1 = dim1 * A->size[2];
     int offset2 = dim2;
     return A->data[offset0 + offset1 + offset2];
 }
 
-void Set(Tensor_t *A, int dim0, int dim1, int dim2, float value) {
+void  Set(const SmartTensor& A, int dim0, int dim1, int dim2, float value) {
     int offset0 = dim0 * A->size[1] * A->size[2];
     int offset1 = dim1 * A->size[2];
     int offset2 = dim2;
     A->data[offset0 + offset1 + offset2] = value;
 }
 
-Tensor_t *MatAdd(Tensor_t *A, Tensor_t *B) {
+SmartTensor MatAdd(const SmartTensor& A, const SmartTensor& B) {
     DBG_ASSERT(A->size[0] == B->size[0]);
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "EmptyDeclOrStmt"
     DBG_ASSERT(A->size[1] == B->size[1]);
-#pragma clang diagnostic pop
     DBG_ASSERT(A->size[2] == B->size[2]);
-    Tensor_t *C = MatNew(A->size[0], A->size[1], A->size[2]);
+    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
 
     for (int i = 0; i < A->size[0]; i ++) {
         for (int j = 0; j < A->size[1]; j ++) {
@@ -75,8 +66,8 @@ Tensor_t *MatAdd(Tensor_t *A, Tensor_t *B) {
     return C;
 }
 
-Tensor_t *ScalarMatMul(Tensor_t *A, float scalar) {
-    Tensor_t *C = MatNew(A->size[0], A->size[1], A->size[2]);
+SmartTensor ScalarMatMul(const SmartTensor& A, float scalar) {
+    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
 
     for (int i = 0; i < A->size[0]; i ++) {
         for (int j = 0; j < A->size[1]; j ++) {
@@ -87,10 +78,10 @@ Tensor_t *ScalarMatMul(Tensor_t *A, float scalar) {
     return C;
 }
 
-Tensor_t *ScalarMatDiv(Tensor_t *A, float scalar) {
+SmartTensor ScalarMatDiv(const SmartTensor& A, float scalar) {
     DBG_ASSERT(scalar != 0);
 
-    Tensor_t *C = MatNew(A->size[0], A->size[1], A->size[2]);
+    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
 
     for (int i = 0; i < A->size[0]; i ++) {
         for (int j = 0; j < A->size[1]; j ++) {
@@ -101,13 +92,13 @@ Tensor_t *ScalarMatDiv(Tensor_t *A, float scalar) {
     return C;
 }
 
-Tensor_t *ScalarMatAdd(Tensor_t *A, float scalar) {
+SmartTensor ScalarMatAdd(const SmartTensor& A, float scalar) {
     DBG_ASSERT(A->size[0] == B->size[0]);
     DBG_ASSERT(A->size[1] == B->size[1]);
     DBG_ASSERT(A->size[2] == B->size[2]);
     DBG_ASSERT(scalar != 0);
 
-    Tensor_t *C = MatNew(A->size[0], A->size[1], A->size[2]);
+    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
 
     for (int i = 0; i < A->size[0]; i ++) {
         for (int j = 0; j < A->size[1]; j ++) {
@@ -118,8 +109,8 @@ Tensor_t *ScalarMatAdd(Tensor_t *A, float scalar) {
     return C;
 }
 
-Tensor_t *ScalarMatInv(Tensor_t *A) {
-    Tensor_t *C = MatNew(A->size[0], A->size[1], A->size[2]);
+SmartTensor ScalarMatInv(const SmartTensor& A) {
+    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
 
     for (int i = 0; i < A->size[0]; i ++) {
         for (int j = 0; j < A->size[1]; j ++) {
@@ -130,8 +121,8 @@ Tensor_t *ScalarMatInv(Tensor_t *A) {
     return C;
 }
 
-Tensor_t *ScalarMatExp(Tensor_t *A) {
-    Tensor_t *C = MatNew(A->size[0], A->size[1], A->size[2]);
+SmartTensor ScalarMatExp(const SmartTensor& A) {
+    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
 
     for (int i = 0; i < A->size[0]; i ++) {
         for (int j = 0; j < A->size[1]; j ++) {
@@ -142,8 +133,8 @@ Tensor_t *ScalarMatExp(Tensor_t *A) {
     return C;
 }
 
-Tensor_t *ScalarMatLog(Tensor_t *A) {
-    Tensor_t *C = MatNew(A->size[0], A->size[1], A->size[2]);
+SmartTensor ScalarMatLog(const SmartTensor& A) {
+    SmartTensor C = MatNew(A->size[0], A->size[1], A->size[2]);
 
     for (int i = 0; i < A->size[0]; i ++) {
         for (int j = 0; j < A->size[1]; j ++) {
@@ -154,11 +145,11 @@ Tensor_t *ScalarMatLog(Tensor_t *A) {
     return C;
 }
 
-Tensor_t *MatMul(Tensor_t *A, Tensor_t *B) {
+SmartTensor MatMul(const SmartTensor& A, const SmartTensor& B) {
     // B, N, M @ B, M, K -> B, N, K
     DBG_ASSERT(A->size[0] == B->size[0]);
     DBG_ASSERT(A->size[2] == B->size[1]);
-    Tensor_t *C = MatNew(A->size[0], A->size[1], B->size[2]);
+    SmartTensor C = MatNew(A->size[0], A->size[1], B->size[2]);
 
     for (int p = 0; p < A->size[0]; p ++) {
         for (int q = 0; q < A->size[1]; q ++) {
@@ -176,8 +167,8 @@ Tensor_t *MatMul(Tensor_t *A, Tensor_t *B) {
     return C;
 }
 
-Tensor_t *MatTrans(Tensor_t *A) {
-    Tensor_t *B = MatNew(A->size[0], A->size[2], A->size[1]);
+SmartTensor MatTrans(const SmartTensor& A) {
+    SmartTensor B = MatNew(A->size[0], A->size[2], A->size[1]);
     for (int i = 0; i < A->size[0]; i ++) {
         for (int j = 0; j < A->size[1]; j ++) {
             for (int k = 0; k < A->size[2]; k ++) {
@@ -188,8 +179,8 @@ Tensor_t *MatTrans(Tensor_t *A) {
     return B;
 }
 
-Tensor_t *ReduceSum(Tensor_t *A, int dim) {
-    Tensor_t *Result;
+SmartTensor ReduceSum(const SmartTensor& A, int dim) {
+    SmartTensor Result;
     if (dim == 0) {
         Result = MatNew(1, A->size[1], A->size[2]);
         for (int j = 0; j < A->size[1]; j ++) {
@@ -218,7 +209,7 @@ Tensor_t *ReduceSum(Tensor_t *A, int dim) {
     return Result;
 }
 
-void MatPrint(Tensor_t *A) {
+void MatPrint(const SmartTensor& A) {
     printf("Shape: %d %d %d\n", A->size[0], A->size[1], A->size[2]);
     for (int i = 0; i < A->size[0]; i ++) {
         printf("[\n");
@@ -233,7 +224,7 @@ void MatPrint(Tensor_t *A) {
     }
 }
 
-void save(const std::string& fileName, Tensor_t *A) {
+void save(const std::string& fileName, const SmartTensor& A) {
     std::ofstream dumpFile;
     dumpFile.open(fileName, std::ios::trunc);
     if (!dumpFile.is_open()) {
@@ -254,7 +245,7 @@ void save(const std::string& fileName, Tensor_t *A) {
     dumpFile.close();
 }
 
-Tensor_t *load(const std::string& fileName) {
+SmartTensor load(const std::string& fileName) {
     std::ifstream dumpFile;
     dumpFile.open(fileName, std::ios::in);
     if (!dumpFile.is_open()) {
@@ -277,7 +268,7 @@ Tensor_t *load(const std::string& fileName) {
     getline(dumpFile, line);
     size2 = std::stoi(line);
 
-    Tensor_t *A = MatNew(size0, size1, size2);
+    SmartTensor A = MatNew(size0, size1, size2);
 
     getline(dumpFile, line);
     if (line != "Data" && line != "Data\r") {
@@ -291,4 +282,12 @@ Tensor_t *load(const std::string& fileName) {
                 Set(A, i, j, k, std::stof(line));
             }}}
     return A;
+}
+
+void MatFill_inplace(const SmartTensor& A, float scalar) {
+    for (int i = 0; i < A->size[0]; i ++) {
+        for (int j = 0; j < A->size[1]; j ++) {
+            for (int k = 0; k < A->size[2]; k ++) {
+                Set(A, i, j, k, scalar);
+            }}}
 }

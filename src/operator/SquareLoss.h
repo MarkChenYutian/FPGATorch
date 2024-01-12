@@ -1,17 +1,16 @@
 #pragma once
 #include "../MatrixInterface.h"
+#include "Module.h"
 
 namespace Neural {
 
-    class SquareLoss {
+    class SquareLoss: public ModuleInterface {
     public:
-        Tensor_t *input;
+        SmartTensor input;
     public:
-        ~SquareLoss() {
-            MatFree(input);
-        }
+        SquareLoss(): input(nullptr) {}
 
-        Tensor_t *Forward(Tensor_t *x) {
+        SmartTensor Forward(SmartTensor x) override {
             input = x;
             float result = 0;
             for (int i = 0; i < x->size[0]; i ++) {
@@ -22,22 +21,21 @@ namespace Neural {
                     }
                 }
             }
-            Tensor_t *resultTensor = MatNew(1, 1 ,1);
+            SmartTensor resultTensor = MatNew(1, 1 ,1);
             MatFill_inplace(resultTensor, result);
             return resultTensor;
         }
 
-        Tensor_t *Backward(Tensor_t *gradient) {
-            Tensor_t *gradient_back = ScalarMatMul(input, 2.f);
-            MatFree(input);
+        SmartTensor Backward(SmartTensor gradient) override {
+            SmartTensor gradient_back = ScalarMatMul(input, 2.f);
             input = nullptr;
             return gradient_back;
         }
 
-        void Update(float lr) {};
+        void Update(float lr) override {};
 
-        void saveModule(const std::string &prefix) {};
-        void loadModule(const std::string &prefix) {};
+        void saveModule(const std::string &prefix) override {};
+        void loadModule(const std::string &prefix) override {};
     };
 
 }

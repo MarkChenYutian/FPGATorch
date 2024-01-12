@@ -20,5 +20,8 @@ def store_as_matrix(fileName: str, A: torch.Tensor):
 #     rand_mat = torch.randn((1, 2, 3))
 #     store_as_matrix(f"input_{i}.matrix", rand_mat)
 
-store_as_matrix("linear_weight.matrix", torch.randn(1, 3, 1))
-store_as_matrix("linear_bias.matrix", torch.randn(1, 1, 1))
+store_as_matrix("linear1_weight.matrix", torch.randn(1, 3, 3))
+store_as_matrix("linear2_weight.matrix", torch.randn(1, 3, 3))
+store_as_matrix("linear1_bias.matrix", torch.randn(1, 1, 3))
+store_as_matrix("linear2_bias.matrix", torch.randn(1, 1, 3))
+

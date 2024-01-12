@@ -8,11 +8,17 @@ project(example-app)
 
 add_executable(example-app
         MatrixInterface.h
+
         cpu_impl/MatrixImplement.h
+
         operator/Linear.h
+        operator/SquareLoss.h
+        operator/Operator.h
+
         optim/SGDOptimizer.h
         example-app.cpp
-        operator/SquareLoss.h
+        operator/Module.h
+        operator/Sequential.h
 )
 
 #target_link_libraries(example-app "${TORCH_LIBRARIES}")

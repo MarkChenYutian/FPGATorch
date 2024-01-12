@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 struct Tensor {
     int size[3];
@@ -8,30 +9,38 @@ struct Tensor {
 };
 
 typedef struct Tensor Tensor_t;
+typedef std::shared_ptr<Tensor_t> SmartTensor;
 
-Tensor_t *MatNew(int dim0, int dim1, int dim2);
-Tensor_t *MatNLike(Tensor_t *original, float scalar);
-void MatFree(Tensor_t *A);
-void MatPrint(Tensor_t *A);
+SmartTensor MatNew(int dim0, int dim1, int dim2);
+SmartTensor MatNLike(const SmartTensor& original, float scalar);
+SmartTensor MatRandN(int dim0, int dim1, int dim2);
 
-float Get(Tensor_t *A, int dim0, int dim1, int dim2);
-void Set(Tensor_t *A, int dim0, int dim1, int dim2, float value);
+void MatPrint(const SmartTensor& A);
 
-Tensor_t *MatAdd(Tensor_t *A, Tensor_t *B);
-Tensor_t *MatMul(Tensor_t *A, Tensor_t *B);
-Tensor_t *MatTrans(Tensor_t *A);
+float Get(const SmartTensor& A, int dim0, int dim1, int dim2);
+void  Set(const SmartTensor& A, int dim0, int dim1, int dim2, float value);
 
-Tensor_t *ScalarMatMul(Tensor_t *A, float scalar);
-Tensor_t *ScalarMatDiv(Tensor_t *A, float scalar);
-Tensor_t *ScalarMatAdd(Tensor_t *A, float scalar);
+SmartTensor MatAdd(const SmartTensor& A, const SmartTensor& B);
+SmartTensor MatMul(const SmartTensor& A, const SmartTensor& B);
+SmartTensor MatTrans(const SmartTensor& A);
 
-Tensor_t *ScalarMatInv(Tensor_t *A);
-Tensor_t *ScalarMatExp(Tensor_t *A);
-Tensor_t *ScalarMatLog(Tensor_t *A);
+SmartTensor ScalarMatMul(const SmartTensor& A, float scalar);
+SmartTensor ScalarMatDiv(const SmartTensor& A, float scalar);
+SmartTensor ScalarMatAdd(const SmartTensor& A, float scalar);
 
-Tensor_t *ReduceSum(Tensor_t *A, int dim);
+SmartTensor ScalarMatInv(const SmartTensor& A);
+SmartTensor ScalarMatExp(const SmartTensor& A);
+SmartTensor ScalarMatLog(const SmartTensor& A);
 
-void MatFill_inplace(Tensor_t *A, float scalar);
+SmartTensor ReduceSum(const SmartTensor& A, int dim);
 
-void save(const std::string &fileName, Tensor_t *A);
-Tensor_t *load(const std::string &fileName);
+void save(const std::string &fileName, const SmartTensor& A);
+SmartTensor load(const std::string &fileName);
+
+void MatFill_inplace(const SmartTensor& A, float scalar);
+
+/**
+ * @WARNING: This is never intended to be called directly. This function is provided to the std::shared_pointer
+ * as an auto de-allocator for Tensor_t object.
+ */
+void MatFree(Tensor_t* A);
