@@ -3,12 +3,14 @@
 #include <cstdio>
 #include <cassert>
 #include <cmath>
-#include "../MatrixInterface.h"
 #include <iomanip>
+#include <sstream>
 #include <iostream>
 #include <fstream>
 #include <memory>
 #include <random>
+
+#include "../MatrixInterface.h"
 
 #ifdef DEBUG
 #define DBG_ASSERT(arg) assert(arg);
@@ -115,7 +117,8 @@ SmartTensor ScalarMatExp(const SmartTensor& A) {
 SmartTensor ScalarMatLog(const SmartTensor& A) {
     SmartTensor result = MatNLike(A, 0.f);
     for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
-        result->data[i] = logf(A->data[i]);
+        if (A->data[i] == 0) result->data[i] = logf(0.0001f);
+        else result->data[i] = logf(A->data[i]);
     }
     return result;
 }
@@ -199,6 +202,38 @@ void MatPrint(const SmartTensor& A) {
     }
 }
 
+std::string serialize(const SmartTensor &A) {
+    size_t size = A->size[0] * A->size[1] * A->size[2];
+    std::ostringstream oss;
+
+    oss << A->size[0] << " " << A->size[1] << " " << A->size[2] << " >DATA_BEGIN< ";
+    for (int i = 0; i < size; i ++) {
+        oss << std::fixed << std::setprecision(6) << A->data[i] << " ";
+    }
+    oss << "\n";
+    return oss.str();
+}
+
+SmartTensor deserialize(const std::string &str) {
+    std::istringstream iss(str);
+    int size0, size1, size2;
+    iss >> size0 >> size1 >> size2;
+
+    std::string identifier;
+    iss >> identifier;
+    if (identifier != ">DATA_BEGIN<") {
+        printf("Did not find identified >DATA_BEGIN< file maybe corrupted or in wrong format");
+        return nullptr;
+    }
+
+    SmartTensor A = MatNew(size0, size1, size2);
+    size_t numElem = size0 * size1 * size2;
+    for (int i = 0; i < numElem; i ++) {
+        iss >> A->data[i];
+    }
+    return A;
+}
+
 void save(const std::string& fileName, const SmartTensor& A) {
     std::ofstream dumpFile;
     dumpFile.open(fileName, std::ios::trunc);
@@ -206,17 +241,7 @@ void save(const std::string& fileName, const SmartTensor& A) {
         std::cout << "Unable to dump tensor to the file " << fileName << std::endl;
         return;
     }
-    dumpFile << "Matrix_Interface\n";
-    dumpFile << "Size Information\n";
-    dumpFile << A->size[0] << "\n";
-    dumpFile << A->size[1] << "\n";
-    dumpFile << A->size[2] << "\n";
-    dumpFile << "Data\n";
-    for (int i = 0; i < A->size[0]; i ++) {
-        for (int j = 0; j < A->size[1]; j ++) {
-            for (int k = 0; k < A->size[2]; k ++) {
-                dumpFile <<  std::fixed << std::setprecision(8) << Get(A, i, j, k) << "\n";
-            }}}
+    dumpFile << serialize(A);
     dumpFile.close();
 }
 
@@ -229,34 +254,7 @@ SmartTensor load(const std::string& fileName) {
     }
     std::string line;
     getline(dumpFile, line);
-    if (line != "Matrix_Interface" && line != "Matrix_Interface\r") {
-        std::cout << "(Wrong format 1) Unable to read tensor from the file" << fileName << std::endl;
-        return nullptr;
-    }
-
-    getline(dumpFile, line);
-    int size0, size1, size2;
-    getline(dumpFile, line);
-    size0 = std::stoi(line);
-    getline(dumpFile, line);
-    size1 = std::stoi(line);
-    getline(dumpFile, line);
-    size2 = std::stoi(line);
-
-    SmartTensor A = MatNew(size0, size1, size2);
-
-    getline(dumpFile, line);
-    if (line != "Data" && line != "Data\r") {
-        std::cout << "(Wrong format 2) Unable to read tensor from the file" << fileName << std::endl;
-        return nullptr;
-    }
-    for (int i = 0; i < A->size[0]; i ++) {
-        for (int j = 0; j < A->size[1]; j ++) {
-            for (int k = 0; k < A->size[2]; k ++) {
-                getline(dumpFile, line);
-                Set(A, i, j, k, std::stof(line));
-            }}}
-    return A;
+    return deserialize(line);
 }
 
 void MatFill_inplace(const SmartTensor& A, float scalar) {

@@ -14,12 +14,14 @@ add_executable(example-app
         operator/Linear.h
         operator/SquareLoss.h
         operator/Operator.h
-
-        optim/SGDOptimizer.h
-        example-app.cpp
         operator/Module.h
         operator/Sequential.h
         operator/ReLU.h
+        operator/XEntropy.h
+
+        optim/SGDOptimizer.h
+        example-app.cpp
+        CSVDataset.h
 )
 
 #target_link_libraries(example-app "${TORCH_LIBRARIES}")

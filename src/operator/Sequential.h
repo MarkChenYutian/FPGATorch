@@ -34,12 +34,23 @@ namespace Neural {
             }
         }
 
-        void saveModule(const std::string &prefix) override {
-
+        std::string saveModule() override {
+            std::string result;
+            for (const auto module : subModules) {
+                result += module->saveModule();
+                result += "---\n";
+            }
+            return result;
         };
 
-        void loadModule(const std::string &prefix) override {
-
+        void loadModule(const std::string &serialized) override {
+            std::string_view temp = serialized;
+            size_t start = 0, end = temp.find("---");
+            for (const auto module : subModules) {
+                 module->loadModule(std::string(temp));
+                 temp = temp.substr(end + 4);
+                 end = temp.find("---");
+            }
         };
     };
 

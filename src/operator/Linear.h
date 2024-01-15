@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <iostream>
 #include "../MatrixInterface.h"
 #include "Module.h"
 
@@ -14,11 +15,11 @@ namespace Neural {
         SmartTensor grad_bias;
         SmartTensor ones;
     public:
-        Linear(int size, int in_channel, int out_channel, float init_std=1.f, float init_mean=0.f):
+        Linear(int size, int in_channel, int out_channel, float init_std=0.1f, float init_mean=0.f):
         input(nullptr), grad_bias(nullptr), grad_weight(nullptr)
         {
             weight = MatRandN(1, in_channel, out_channel, init_mean, init_std);
-            bias = MatRandN(1, 1, out_channel, init_mean, init_std);
+            bias = MatNew(1, 1, out_channel);
             ones = MatNew(1, size, 1);
             MatFill_inplace(ones, 1.f);
         }
@@ -65,18 +66,34 @@ namespace Neural {
             bias = updated_bias;
         }
 
-        void saveModule(const std::string& prefix) override {
-            std::string weight_path = prefix + "weight.matrix";
-            std::string bias_path   = prefix + "bias.matrix";
-            save(weight_path, weight);
-            save(bias_path, bias);
-        }
+//        void saveModule(const std::string& prefix) override {
+//            std::string weight_path = prefix + "weight.matrix";
+//            std::string bias_path   = prefix + "bias.matrix";
+//            save(weight_path, weight);
+//            save(bias_path, bias);
+//        }
+//
+//        void loadModule(const std::string& prefix) override {
+//            std::string weight_path = prefix + "weight.matrix";
+//            std::string bias_path   = prefix + "bias.matrix";
+//            weight = load(weight_path);
+//            bias   = load(bias_path);
+//        }
 
-        void loadModule(const std::string& prefix) override {
-            std::string weight_path = prefix + "weight.matrix";
-            std::string bias_path   = prefix + "bias.matrix";
-            weight = load(weight_path);
-            bias   = load(bias_path);
-        }
+        std::string saveModule() override {
+            return "MODULE_LIENAR.weight " + serialize(weight)
+                 + "MODULE_LINEAR.bias "   + serialize(bias);
+        };
+
+        void loadModule(const std::string &serialized) override {
+            std::istringstream iss(serialized);
+            std::string line;
+            int count = 0;
+            std::getline(iss, line);
+            weight = deserialize(line.substr(21));
+
+            std::getline(iss, line);
+            bias = deserialize(line.substr(19));
+        };
     };
 }
