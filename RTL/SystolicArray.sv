@@ -1,14 +1,14 @@
 `default_nettype none
 
 // Perform matrix multiplication using systolic array algorithm
-module SystolicArray #(parameter N = 8)
+module SystolicArray #(parameter N = 8, W = 32)
   (input logic reset, clock,
-   input logic [N-1:0][31:0] A, B,
-   output logic [N-1:0][N-1:0][31:0] Out);
+   input logic [N-1:0][W-1:0] A, B,
+   output logic [N-1:0][N-1:0][W-1:0] Out);
   
   // Input ShiftReg for each processor
   // A: row shift  B: col shift
-  logic [N-1:0][N-1:0][31:0] A_SR, B_SR;
+  logic [N-1:0][N-1:0][W-1:0] A_SR, B_SR;
 
   genvar r, c;
   generate

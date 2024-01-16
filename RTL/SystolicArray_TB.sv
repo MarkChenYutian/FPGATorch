@@ -5,7 +5,7 @@ module SystolicArray_TB;
   logic [1:0][31:0] A, B;
   logic [1:0][1:0][31:0] Out;
 
-  SystolicArray #(2) DUT(.*);
+  SystolicArray #(2, 32) DUT(.*);
 
   logic [2:0][1:0][31:0] A_input, B_input;
   always_comb begin
