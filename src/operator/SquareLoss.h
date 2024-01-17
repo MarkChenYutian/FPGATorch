@@ -34,8 +34,12 @@ namespace Neural {
 
         void Update(float lr) override {};
 
-        void saveModule(const std::string &prefix) override {};
-        void loadModule(const std::string &prefix) override {};
+        std::string saveModule() override {
+            return "MODULE_SQUARE_LOSS\n";
+        };
+
+        void loadModule(const std::string &serialized) override {
+        };
     };
 
 }

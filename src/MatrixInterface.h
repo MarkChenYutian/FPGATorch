@@ -13,7 +13,7 @@ typedef std::shared_ptr<Tensor_t> SmartTensor;
 
 SmartTensor MatNew(int dim0, int dim1, int dim2);
 SmartTensor MatNLike(const SmartTensor& original, float scalar);
-SmartTensor MatRandN(int dim0, int dim1, int dim2);
+SmartTensor MatRandN(int dim0, int dim1, int dim2, float mean=0.0f, float std=1.0f);
 
 void MatPrint(const SmartTensor& A);
 
@@ -36,7 +36,8 @@ SmartTensor ScalarGetGTMask(const SmartTensor& A, float scalar);
 
 SmartTensor ReduceSum(const SmartTensor& A, int dim);
 
-
+std::string serialize(const SmartTensor &A);
+SmartTensor deserialize(const std::string &str);
 void save(const std::string &fileName, const SmartTensor& A);
 SmartTensor load(const std::string &fileName);
 
