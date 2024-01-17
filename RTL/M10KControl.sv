@@ -1,7 +1,7 @@
 `default_nettype none
 
 // Wrapper handling M10K read and write
-module M10Control
+module M10KControl
   (input logic read, write,
    input logic [7:0] address,
    output logic [31:0] readdata);
