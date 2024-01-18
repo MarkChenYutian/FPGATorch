@@ -1,0 +1,17 @@
+Analysis & Synthesis Status : Successful - Wed Jan 17 17:14:54 2024
+Quartus Prime Version : 16.1.2 Build 203 01/18/2017 SJ Standard Edition
+Revision Name : DE10_Standard_GHRD
+Top-level Entity Name : DE10_Standard_GHRD
+Family : Cyclone V
+Logic utilization (in ALMs) : N/A
+Total registers : 1493
+Total pins : 338
+Total virtual pins : 0
+Total block memory bits : 65,536
+Total DSP Blocks : 0
+Total HSSI RX PCSs : 0
+Total HSSI PMA RX Deserializers : 0
+Total HSSI TX PCSs : 0
+Total HSSI PMA TX Serializers : 0
+Total PLLs : 0
+Total DLLs : 1
