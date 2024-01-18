@@ -7,28 +7,33 @@
 `define DATA_ADDR 999
 `define RES_ADDR 999
 
+`define ADDR_WIDTH 12
 `define DATA_WIDTH 32
 `define OP_WIDTH 4
-`define DIM_WIDTH 4
-`define DONE_WIDTH 1
+`define DIM_WIDTH 6
 
-`define ADDR_WIDTH 12
-`define RES_ADDR 999
+`define READ_BW 4
+
+`define SINGLE_MAT_ADD 8
+`define SINGLE_MUL 8
+`define SINGLE_DIV 8
+`define SINGLE_ADD 8
+`define SINGLE_INV 8
+`define SINGLE_MAT_MUL 8
+
 
 package OPpkg
 
-  typedef enum logic [$clog(OP_NUM)-1:0]
+  typedef enum logic [$clog(`OP_NUM)-1:0]
     { NONE = 0,
       MAT_ADD = 1,
       MAT_SCAL_MUL = 2,
       MAT_SCAL_DIV = 3,
       MAT_SCAL_ADD = 4,
       MAT_SCAL_INV = 5,
-      MAT_SCAL_EXP = 6,
-      MAT_SCAL_LOG = 7,
-      MAT_MUL = 8,
-      MAT_TRAS = 9,
-      REDUCE_SUM = 10} op_t;
+      MAT_MUL = 6,
+      MAT_TRAS = 7,
+      REDUCE_SUM = 8} op_t;
 
 endpackage : OPpkg
 
@@ -47,19 +52,43 @@ endmodule : ALU
 
 module FSM
   (input logic clock, reset,
-   input logic [$clog(OP_NUM)-1:0] op_code,
-   input logic [DIM_WIDTH-1:0] dim1, dim2,
-   output logic [ADDR_WIDTH-1:0] mem_addr,
-   output logic [DATA_WIDTH-1:0] mem_data,
-   output logic read, write);
+   input logic [$clog(`OP_NUM)-1:0] op_code,
+   input logic [`DIM_WIDTH-1:0] dim1, dim2,
+   output logic [`ADDR_WIDTH-1:0] mem_addr,
+   output logic [`DATA_WIDTH-1:0] mem_data,
+   output logic read, write, read_count, write_count);
 
-  enum logic {WAIT, COMPUTE} state, nextState;
+  enum logic {WAIT, READ, COMPUTE, WRITE} state, nextState;
+
+  logic [`ADDR_WIDTH-1:0] read_ptr, read_single_ptr, write_ptr, write_single_ptr;
   
-  Counter #(8, 1) countAddr(.D(), .en(nextState == COMPUTE), .clear(op_code == NONE), .load(), .clock, .Q(mat_addr));
+  Counter #(`ADDR_WIDTH, 1) readAddr (.D(`DATA_ADDR), .en(next), .clear(op_code == NONE), .load(reset), .clock, .Q(read_ptr));
+  Counter #(`ADDR_WIDTH, 1) readSingleAddr (.D(), .en(read_single_next), .clear(read_next), .load(), .clock, .Q(read_single_ptr));
+  
+  Counter #(`ADDR_WIDTH, 1) writeAddr (.D(`RES_ADDR), .en(write_next), .clear(op_code == NONE), .load(reset), .clock, .Q(write_ptr));
+  Counter #(`ADDR_WIDTH, 1) writeSingleAddr (.D(), .en(write_single_next), .clear(write_next), .load(), .clock, .Q(write_single_ptr));
+
+  Counter #(`ADDR_WIDTH, 1) compute (.D(), .en(read_next), .clear(), .load(reset), .clock, .Q(read_ptr));
+
+  always_comb begin
+    case (op_code)
+      NONE: read_cycle = 0;
+      MAT_ADD: read_cycle = `SINGLE_MAT_ADD;
+      MAT_SCAL_MUL: read_cycle = `SINGLE_MUL;
+      MAT_SCAL_DIV: read_cycle = `SINGLE_DIV;
+      MAT_SCAL_ADD: read_cycle = `SINGLE_ADD;
+      MAT_SCAL_INV: read_cycle = `SINGLE_INV;
+      MAT_MUL: read_cycle = `SINGLE_MAT_MUL;
+      MAT_TRAS: read_cycle = 0;
+      REDUCE_SUM: read_cycle = 0;
+      default: read_cycle = 0;
+    endcase
+  end
 
   always_comb
     case (state)
-      WAIT: nextState = (op_code == NONE) ? WAIT : COMPUTE;
+      WAIT: nextState = (op_code == NONE) ? WAIT : READ;
+      READ: nextState = (read_single_ptr < read_cycle) ? COMPUTE : READ;
       COMPUTE: nextState = done ? WAIT : COMPUTE;
     endcase
 
@@ -81,7 +110,7 @@ module FSM
       READ: begin
         if (MAT_ADDR < dim1 * dim2) begin
           read = 1'b1;
-          mem_addr = `DATA_ADDR + mat_addr;
+          mem_addr = `DATA_ADDR + read_ptr;
         end else begin
           write = 1'b1;
           mem_data = 0;
@@ -103,7 +132,7 @@ endmodule : FSM
 module MatMem
   (input logic clock, reset);
   
-  logic [ADDR_WIDTH-1:0] addr;
+  logic [`ADDR_WIDTH-1:0] addr;
   
   FSM fsm (.clock, .reset, .op_code, .MAT_ADDR, .mem_addr, .mem_data, .read, .write);
 
@@ -132,30 +161,37 @@ module MatAdd // read -> add -> save
 endmodule : MatAdd
 
 
-module MatTrans
-  (parameter DIM0_MAX = 2,
-             SIZE_MAX = 64,
-             W = 23)
-  (input logic clock, reset,
-   input logic size0, size1, size2);
-
-  // Set(B, i, k, j, Get(A, i, j, k));
-  // compute addrA and addrB, read -> switch position -> write
-
-endmodule : MatTrans
-
-
-module ReduceSum
-  (parameter SIZE_MAX = 64,
-             SIZE_SINGLE = 8,
-             W = 32)
-  (input logic clock, reset,
-   input logic [SIZE_SINGLE*SIZE_SINGLE][W-1:0] A, B,
-   output logic [SIZE_SINGLE*SIZE_SINGLE][W-1:0] C);
-
-  // dim = 0: add i, Set(Result, 0, j, k, value);
-  // dim = 1: add j, Set(Result, i, 0, k, value);
-  // dim = 2: add k, Set(Result, i, 0, k, value); not yet implemented in C!
+module Register
+  #(parameter WIDTH=8)
+  (input  logic [WIDTH-1:0] D,
+   input  logic             en, clear, clock,
+   output logic [WIDTH-1:0] Q);
+   
+  always_ff @(posedge clock)
+    if (en)
+      Q <= D;
+    else if (clear)
+      Q <= '0;
+      
+endmodule : Register
 
 
-endmodule : ReduceSum
+module Counter
+  #(parameter WIDTH=8,
+              STEP=1)
+  (input  logic [WIDTH-1:0] D,
+   input  logic             en, clear, load, clock, up,
+   output logic [WIDTH-1:0] Q);
+   
+  always_ff @(posedge clock)
+    if (clear)
+      Q <= {WIDTH {1'b0}};
+    else if (load)
+      Q <= D;
+    else if (en)
+      if (up)
+        Q <= Q + STEP;
+      else
+        Q <= Q - STEP;
+        
+endmodule : Counter
