@@ -1,0 +1,88 @@
+Chronologic VCS simulator copyright 1991-2022
+Contains Synopsys proprietary information.
+Compiler version T-2022.06_Full64; Runtime version T-2022.06_Full64;  Jan 18 23:16 2024
+VCD+ Writer T-2022.06_Full64 Copyright (c) 1991-2022 by Synopsys Inc.
+The file '/afs/ece.cmu.edu/usr/zhiyingm/Private/CNN/FPGATorch/RTL/inter.vpd' was opened successfully.
+$finish called from file "basic_func.sv", line 215.
+$finish at simulation time              1000005
+Simulation complete, time is 1000005.
+0
+Chronologic VCS simulator copyright 1991-2022
+Contains Synopsys proprietary information.
+Compiler version T-2022.06_Full64; Runtime version T-2022.06_Full64;  Jan 18 23:20 2024
+VCD+ Writer T-2022.06_Full64 Copyright (c) 1991-2022 by Synopsys Inc.
+The file '/afs/ece.cmu.edu/usr/zhiyingm/Private/CNN/FPGATorch/RTL/inter.vpd' was opened successfully.
+$finish called from file "basic_func.sv", line 215.
+$finish at simulation time              1000005
+Simulation complete, time is 1000005.
+0
+Chronologic VCS simulator copyright 1991-2022
+Contains Synopsys proprietary information.
+Compiler version T-2022.06_Full64; Runtime version T-2022.06_Full64;  Jan 18 23:23 2024
+VCD+ Writer T-2022.06_Full64 Copyright (c) 1991-2022 by Synopsys Inc.
+The file '/afs/ece.cmu.edu/usr/zhiyingm/Private/CNN/FPGATorch/RTL/inter.vpd' was opened successfully.
+$finish called from file "basic_func.sv", line 215.
+$finish at simulation time              1000005
+Simulation complete, time is 1000005.
+Chronologic VCS simulator copyright 1991-2022
+Contains Synopsys proprietary information.
+Compiler version T-2022.06_Full64; Runtime version T-2022.06_Full64;  Jan 18 23:27 2024
+VCD+ Writer T-2022.06_Full64 Copyright (c) 1991-2022 by Synopsys Inc.
+The file '/afs/ece.cmu.edu/usr/zhiyingm/Private/CNN/FPGATorch/RTL/inter.vpd' was opened successfully.
+Error: [DVAP037] 
+Errors while sourcing the file '/afs/ece.cmu.edu/usr/zhiyingm/Private/CNN/FPGATorch/RTL/.restartSimSession.tcl':
+
+ Line 95: [DVSG007] 
+Signal ' "FSM_test.dut.dim1" "FSM_test.dut.dim2"' cannot be found..
+$finish called from file "basic_func.sv", line 223.
+$finish at simulation time              1000005
+Simulation complete, time is 1000005.
+Chronologic VCS simulator copyright 1991-2022
+Contains Synopsys proprietary information.
+Compiler version T-2022.06_Full64; Runtime version T-2022.06_Full64;  Jan 18 23:28 2024
+VCD+ Writer T-2022.06_Full64 Copyright (c) 1991-2022 by Synopsys Inc.
+The file '/afs/ece.cmu.edu/usr/zhiyingm/Private/CNN/FPGATorch/RTL/inter.vpd' was opened successfully.
+$finish called from file "basic_func.sv", line 223.
+$finish at simulation time              1000005
+Simulation complete, time is 1000005.
+Chronologic VCS simulator copyright 1991-2022
+Contains Synopsys proprietary information.
+Compiler version T-2022.06_Full64; Runtime version T-2022.06_Full64;  Jan 18 23:30 2024
+VCD+ Writer T-2022.06_Full64 Copyright (c) 1991-2022 by Synopsys Inc.
+The file '/afs/ece.cmu.edu/usr/zhiyingm/Private/CNN/FPGATorch/RTL/inter.vpd' was opened successfully.
+$finish called from file "basic_func.sv", line 222.
+$finish at simulation time              1000005
+Simulation complete, time is 1000005.
+Chronologic VCS simulator copyright 1991-2022
+Contains Synopsys proprietary information.
+Compiler version T-2022.06_Full64; Runtime version T-2022.06_Full64;  Jan 18 23:33 2024
+VCD+ Writer T-2022.06_Full64 Copyright (c) 1991-2022 by Synopsys Inc.
+The file '/afs/ece.cmu.edu/usr/zhiyingm/Private/CNN/FPGATorch/RTL/inter.vpd' was opened successfully.
+$finish called from file "basic_func.sv", line 225.
+$finish at simulation time              1000005
+Simulation complete, time is 1000005.
+Chronologic VCS simulator copyright 1991-2022
+Contains Synopsys proprietary information.
+Compiler version T-2022.06_Full64; Runtime version T-2022.06_Full64;  Jan 18 23:35 2024
+VCD+ Writer T-2022.06_Full64 Copyright (c) 1991-2022 by Synopsys Inc.
+The file '/afs/ece.cmu.edu/usr/zhiyingm/Private/CNN/FPGATorch/RTL/inter.vpd' was opened successfully.
+$finish called from file "basic_func.sv", line 225.
+$finish at simulation time              1000005
+Simulation complete, time is 1000005.
+Chronologic VCS simulator copyright 1991-2022
+Contains Synopsys proprietary information.
+Compiler version T-2022.06_Full64; Runtime version T-2022.06_Full64;  Jan 18 23:43 2024
+VCD+ Writer T-2022.06_Full64 Copyright (c) 1991-2022 by Synopsys Inc.
+The file '/afs/ece.cmu.edu/usr/zhiyingm/Private/CNN/FPGATorch/RTL/inter.vpd' was opened successfully.
+Error: [DVAP037] 
+Errors while sourcing the file '/afs/ece.cmu.edu/usr/zhiyingm/Private/CNN/FPGATorch/RTL/.restartSimSession.tcl':
+
+ Line 95: [DVSG007] 
+Signal ' "FSM_test.dut.rw_num"' cannot be found..
+$finish called from file "basic_func.sv", line 197.
+$finish at simulation time              1000005
+Simulation complete, time is 1000005.
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 1000005
+CPU Time:      0.590 seconds;       Data structure size:   0.0Mb
+Thu Jan 18 23:44:48 2024
