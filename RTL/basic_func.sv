@@ -1,29 +1,6 @@
 `default_nettype none
 
-`define SIZE_MAX 64
-
-`define OP_ADDR 0
-`define SCALAR_ADDR 10
-`define DATAA_ADDR 100
-`define DATAB_ADDR 200
-`define RES_ADDR 500
-
-`define ADDR_WIDTH 12
-`define DATA_WIDTH 32
-`define OP_WIDTH 4
-`define DIM_WIDTH 6
-
-`define READ_BW 4
-
-`define SINGLE_ACCESS 8
-
-`define CYCLE_WIDTH 3
-`define CYCLE_MAT_ADD 5
-`define CYCLE_MUL 5
-`define CYCLE_DIV 5
-`define CYCLE_ADD 5
-`define CYCLE_INV 5
-`define CYCLE_MAT_MUL 5
+`include "parameter.svh"
 
 typedef enum logic [`OP_WIDTH-1:0] {
   NONE = 0,
@@ -37,8 +14,8 @@ typedef enum logic [`OP_WIDTH-1:0] {
   REDUCE_SUM = 8
 } op_code_t;
 
-typedef struct {
-  op_code_t [`OP_WIDTH-1:0] op_code;
+typedef struct packed {
+  op_code_t op_code;
   logic [`DIM_WIDTH-1:0] dimA1;
   logic [`DIM_WIDTH-1:0] dimA2;
   logic [`DIM_WIDTH-1:0] dimB1;
@@ -207,7 +184,7 @@ module FSM
 
 endmodule : FSM
 
-
+/*
 module FSM_test();
 
   logic clock, reset;
@@ -241,22 +218,24 @@ module FSM_test();
   end
 
 endmodule : FSM_test
-
+*/
 
 module MatMem
   (input logic clock, reset);
-  
+
   meta_data_t meta_data;
   logic [`ADDR_WIDTH-1:0] mem_addr;
-  logic [`SINGLE_ACCESS-1:0][`DATA_WIDTH-1:0] dataRes;
-  logic [`DATA_WIDTH-1:0] mem_data;
+  logic [`SINGLE_ACCESS-1:0][`DATA_WIDTH-1:0] dataA, dataB, dataRes_prep, dataRes;
+  logic [`DATA_WIDTH-1:0] mem_data, data;
   logic read, write, idle, save_op, save_scalar, save_Res;
   logic [`SINGLE_ACCESS-1:0] save_A, save_B;
 
-  FSM fsm (.clock, .reset, .meta_data(data), .mem_addr, .mem_data, .read, .write, .idle,
-           .save_op, .save_scalar, .save_Res, .save_A, .save_B);
+  assign meta_data = data;
 
-  MemControl mem (.clock, .data(mem_data), .address(mem_addr), .read, .write, .output(data));
+  FSM fsm (.clock, .reset, .meta_data, .dataRes, .mem_addr, .mem_data,
+           .read, .write, .idle, .save_op, .save_scalar, .save_Res, .save_A, .save_B);
+
+  M10KControl mem (.read, .write, .address(mem_addr), .writedata(mem_data), .readdata(data));
 
   genvar i;
   generate
@@ -272,18 +251,41 @@ module MatMem
 endmodule : MatMem
 
 
+module MatMem_test();
+
+  logic clock, reset;
+
+  MatMem dut (.*);
+
+  initial begin
+    clock = 1'b0;
+    forever #5 clock = ~clock;
+  end
+
+  initial begin
+    reset = 1'b0;
+    reset <= 1'b1;
+
+    #1000000;
+
+    $finish;
+  end
+
+endmodule : MatMem_test
+
+
 module MatAdd // read -> add -> save
   (input logic clock, reset,
    input logic [`DATA_WIDTH-1:0] dataA, dataB,
    output logic [`DATA_WIDTH-1:0] dataC);
 
-  add_cycle_7_area (.clock,
-                    .dataa(dataA),
-                    .datab(dataB),
-                    .nan(),
-                    .overflow(),
-                    .result(dataC),
-                    .underflow(),
-                    .zero());
+  add_cycle_7_area add (.clock,
+                        .dataa(dataA),
+                        .datab(dataB),
+                        .nan(),
+                        .overflow(),
+                        .result(dataC),
+                        .underflow(),
+                        .zero());
 
 endmodule : MatAdd
