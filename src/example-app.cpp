@@ -3,28 +3,7 @@
 #include "operator/Operator.h"
 #include "optim/SGDOptimizer.h"
 #include "CSVDataset.h"
-
-int getLabel(const SmartTensor& softmax) {
-    float max_value = -1.f;
-    int pos = -1;
-    for (int i = 0; i < softmax->size[1]; i ++) {
-        if (Get(softmax, 0, i, 0) > max_value) {
-            max_value = Get(softmax, 0, i, 0);
-            pos = i;
-        }
-    }
-    return pos;
-}
-
-std::string readFileAsString(const std::string& filename) {
-    std::ifstream ifs(filename);
-    if (!ifs) {
-        throw std::runtime_error("Cannot open file: " + filename);
-    }
-    std::stringstream buffer;
-    buffer << ifs.rdbuf();
-    return buffer.str();
-}
+#include "Utility.h"
 
 void loadModel(Neural::Sequential network) {
     std::string weight_serial = readFileAsString("../Network.matrix");
@@ -44,15 +23,13 @@ int main() {
     auto network = Neural::Sequential({
         &layer1, &active1, &layer2, &active2, &layer3
     });
-    loadModel(network);
 
     auto optimizer = Optim::SGDOptimizer(0.001f);
     float correct_count = 0;
 
     optimizer.RegisterModule(&network);
 
-//    for (int i = 0; i < dataset.mvData.size(); i ++) {
-    for (int i = 0; i < 1000; i ++) {
+   for (int i = 0; i < dataset.mvData.size(); i ++) {
         SmartTensor input = dataset.mvData[i];
         SmartTensor label = dataset.mvLabel[i];
 
@@ -66,9 +43,8 @@ int main() {
         SmartTensor gradient_in = loss_fn.Backward(nullptr);
         network.Backward(gradient_in);
         optimizer.Update();
-        std::cout <<
-        "\rAcc: " << correct_count / static_cast<float>(i) <<
-        "\tIter " << i << " : " << loss << " | Pred: " << pred_val << " Actual: " << label_val << std::flush;
+
+        FlushInterface(input, pred_val, label_val, (correct_count / static_cast<float>(i + 1)));
     }
 
 

@@ -88,7 +88,6 @@ namespace Neural {
         void loadModule(const std::string &serialized) override {
             std::istringstream iss(serialized);
             std::string line;
-            int count = 0;
             std::getline(iss, line);
             weight = deserialize(line.substr(21));
 
