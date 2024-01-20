@@ -17,11 +17,16 @@ refer to user manual chapter 7 for details about the demo
 
 #define HW_REGS_BASE ( ALT_STM_OFST )
 #define HW_REGS_SPAN ( 0x04000000 )
+#define H2F_AXI_BASE ( 0xC0000000 )
+#define MAT_A_OFST ( 0x00000000 )
+#define MAT_B_OFST ( 0x00010000 )
+#define MAT_C_OFST ( 0x00020000 )
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
 int main() {
 
-	void *virtual_base;
+	void *instruction_base;
+	void *fpga_mem_base;
 	int fd;
 	int loop_count;
 	int led_direction;
@@ -36,22 +41,31 @@ int main() {
 		return( 1 );
 	}
 
-	virtual_base = mmap( NULL, HW_REGS_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, HW_REGS_BASE );
+	instruction_base = mmap( NULL, HW_REGS_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, HW_REGS_BASE );
 
-	if( virtual_base == MAP_FAILED ) {
+	if( instruction_base == MAP_FAILED ) {
 		printf( "ERROR: mmap() failed...\n" );
 		close( fd );
 		return( 1 );
 	}
 
-	h2p_lw_led_addr=virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + LED_PIO_BASE ) & ( unsigned long)( HW_REGS_MASK ) );
+	fpga_mem_base = mmap( NULL, FPGA_MEM_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, H2F_AXI_BASE );
+
+	if( fpga_mem_base == MAP_FAILED ) {
+		printf( "ERROR: mmap() failed...\n" );
+		close( fd );
+		return( 1 );
+	}
+
+
+	h2p_lw_led_addr = instruction_base + ( ( unsigned long )( ALT_LWFPGASLVS_OFST + LED_PIO_BASE ) & ( unsigned long)( HW_REGS_MASK ) );
 
 	// toggle the LEDs a bit
 
 	loop_count = 0;
 	led_mask = 0x01;
 	led_direction = 0; // 0: left to right direction
-	while( loop_count < 60 ) {
+	while( loop_count < 5 ) {
 		
 		// control led
 		*(uint32_t *)h2p_lw_led_addr = ~led_mask; 
@@ -77,7 +91,7 @@ int main() {
 
 	// clean up our memory mapping and exit
 	
-	if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {
+	if( munmap( instruction_base, HW_REGS_SPAN ) != 0 ) {
 		printf( "ERROR: munmap() failed...\n" );
 		close( fd );
 		return( 1 );

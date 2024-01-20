@@ -146,6 +146,11 @@ SmartTensor MatMul(const SmartTensor& A, const SmartTensor& B) {
     return C;
 }
 
+SmartTensor MatMul(const SmartTensor& A, const SmartTensor& B) {
+    SmartTensor C = MatNew(A->size[0], A->size[1], B->size[2]);
+    return C;
+}
+
 SmartTensor MatTrans(const SmartTensor& A) {
     SmartTensor B = MatNew(A->size[0], A->size[2], A->size[1]);
     for (int i = 0; i < A->size[0]; i ++) {
