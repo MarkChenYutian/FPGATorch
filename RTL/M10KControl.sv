@@ -4,6 +4,7 @@
 module M10KControl
   (input logic read, write,
    input logic [7:0] address,
+   input logic [31:0] writedata,
    output logic [31:0] readdata);
 
   logic write, chipselect;
@@ -18,6 +19,7 @@ module M10K
   (input logic write, chipselect,
    input logic [7:0] address,
    input logic [3:0] byteenable,
+   input logic [31:0] writedata,
    output logic [31:0] readdata);
 
    assign readdata = 'b0;
