@@ -226,3 +226,100 @@ module IncCounter
   end
     
 endmodule
+
+
+// Custom Shift Register with asymmetric input-output widths
+module AsymmetricShiftRegister_PISO
+  #(parameter INPUT_WIDTH = 32,
+    parameter OUTPUT_WIDTH = 8)
+  (input logic [INPUT_WIDTH-1 : 0] D,
+   input logic en, load, left, clock,
+   output logic [OUTPUT_WIDTH-1 : 0] Q);
+  logic [INPUT_WIDTH-1 : 0] Buffer;
+
+  always_comb begin
+    if (left)
+      Q = Buffer[INPUT_WIDTH - OUTPUT_WIDTH +: OUTPUT_WIDTH];
+    else 
+      Q = Buffer[0 +: OUTPUT_WIDTH];
+  end
+
+  always_ff @(posedge clock) begin
+    if (load)
+      Buffer <= D;
+    else if (en)
+      if (left) 
+        Buffer <= {Buffer[0 +: INPUT_WIDTH - OUTPUT_WIDTH], {OUTPUT_WIDTH {1'b0}}};
+      else
+        Buffer <= {{OUTPUT_WIDTH {1'b0}}, Buffer[OUTPUT_WIDTH +: INPUT_WIDTH - OUTPUT_WIDTH]};
+  end
+
+endmodule
+
+module AsymmetricShiftRegister_SIPO
+  #(parameter INPUT_WIDTH = 8,
+    parameter OUTPUT_WIDTH = 32)
+  (input logic [INPUT_WIDTH-1 : 0] D, 
+   input logic en, left, clock,
+   output logic [OUTPUT_WIDTH-1 : 0] Q);
+  
+  always_ff @(posedge clock) begin
+    if (en) begin
+      if (left) 
+        Q <= {Q[0 +: OUTPUT_WIDTH - INPUT_WIDTH], D};
+      else
+        Q <= {D, Q[INPUT_WIDTH +: OUTPUT_WIDTH - INPUT_WIDTH]};
+    end
+  end
+
+endmodule
+
+/*
+ *  Create a FIFO (First In First Out) buffer with depth 4 using the given
+ *  interface and constraints
+ *    - The buffer is initally empty
+ *    - Reads are combinational, so data_out is valid unless empty is asserted
+ *    - Removal from the queue is processed on the clock edge.
+ *    - Writes are processed on the clock edge
+ *    - If a write is pending while the buffer is full, do nothing
+ *    - If a read is pending while the buffer is empty, do nothing
+ */
+module FIFO #(parameter WIDTH=32) (
+  input logic              clock, reset_n,
+  input logic [WIDTH-1:0]  data_in,
+  input logic              we, re,
+  output logic [WIDTH-1:0] data_out,
+  output logic             full, empty);
+  logic [31:0] Q[4];
+  logic [1:0] putPtr, getPtr; 
+  logic [2:0] count;
+
+  assign empty = (count == 0);
+  assign full = (count == 3'd4);
+  assign data_out = empty ? {WIDTH {1'bz}} : Q[getPtr];
+  always_ff @(posedge clock, negedge reset_n) begin
+    if (~reset_n) begin
+      count <= 0;
+      getPtr <= 0;
+      putPtr <= 0;
+    end
+    else begin
+      if (re && (!empty) && we) begin // read & write at the same time
+        getPtr <= getPtr + 1;
+        Q[putPtr] <= data_in;
+        putPtr <= putPtr + 1;
+        count <= count;
+      end
+      else 
+      if (re && (!empty)) begin // not empty
+        getPtr <= getPtr + 1;
+        count <= count - 1;
+      end
+      else if (we && (!full)) begin // not full
+        Q[putPtr] <= data_in;
+        putPtr <= putPtr + 1;
+        count <= count + 1;
+      end
+    end
+  end
+endmodule : FIFO
