@@ -61,7 +61,7 @@ module SystolicArray_Driver
   input logic [`READ_BW-1:0][`DATA_WIDTH-1:0] readdata, 
   input logic [`ADDR_WIDTH-1:0] base_A, base_B,
   input logic [`DIM_WIDTH-1:0] dim_col_A, dim_col_B,
-  output logic read,
+  output logic read, done
   output logic [`ADDR_WIDTH-1:0] read_addr,
   output logic [7:0][7:0][`DATA_WIDTH-1:0] Out);
 
