@@ -32,3 +32,18 @@ module Counter
         Q <= Q - STEP;
         
 endmodule : Counter
+
+
+module Accum
+  #(parameter WIDTH = 8)
+  (input logic [WIDTH-1:0] D, offset,
+   input logic en, clock, load,
+   output logic [WIDTH-1:0] Q);
+
+  always_ff @(posedge clock)
+    if (load)
+      Q <= D;
+    else if (en)
+      Q <= Q + offset;
+
+endmodule: Accum

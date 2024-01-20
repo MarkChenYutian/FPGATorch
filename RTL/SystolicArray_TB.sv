@@ -1,7 +1,7 @@
 `default_nettype none
 
 module SystolicArray_TB;
-  logic clock, reset;
+  logic clock, reset, en;
   logic [1:0][31:0] A, B;
   logic [1:0][1:0][31:0] Out;
 
@@ -33,6 +33,7 @@ module SystolicArray_TB;
     reset <= 1;
     @(posedge clock)
     reset <= 0;
+    en <= 1;
     A <= A_input[0];
     B <= B_input[0];
     @(posedge clock)
