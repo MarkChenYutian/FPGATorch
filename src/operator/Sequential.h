@@ -44,8 +44,8 @@ namespace Neural {
         };
 
         void loadModule(const std::string &serialized) override {
-            std::string_view temp = serialized;
-            size_t start = 0, end = temp.find("---");
+            std::string temp = serialized;
+            size_t end = temp.find("---");
             for (const auto module : subModules) {
                  module->loadModule(std::string(temp));
                  temp = temp.substr(end + 4);

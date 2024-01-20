@@ -3,12 +3,14 @@ project(FPGATorchDemo)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
 # Cross-compilation settings
-set(CROSS_COMPILE arm-linux-gnueabihf-)
+set(CROSS_COMPILE /home/yutian/intelFPGA/19.1/embedded/ds-5/sw/gcc/bin/arm-linux-gnueabihf-)
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
 # Compiler settings
-set(CMAKE_C_COMPILER ${CROSS_COMPILE}gcc)
+if (FPGA) 
+        set(CMAKE_CXX_COMPILER ${CROSS_COMPILE}c++)
+endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
 
@@ -33,14 +35,12 @@ add_executable(FPGATorch
         optim/SGDOptimizer.h
         example-app.cpp
         CSVDataset.h
+        Utility.h
         hps_0.h
 )
 
 # Include directories
 target_include_directories(FPGATorch PUBLIC ${HWLIBS_ROOT}/include/${ALT_DEVICE_FAMILY})
 target_include_directories(FPGATorch PUBLIC ${HWLIBS_ROOT}/include/)
-
-message(WARNING "HWLIBS_ROOT value: ${HWLIBS_ROOT}")
-
 set_property(TARGET FPGATorch PROPERTY CXX_STANDARD 11)
 
