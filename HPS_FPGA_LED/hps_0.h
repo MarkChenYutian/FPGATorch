@@ -21,17 +21,70 @@
  */
 
 /*
- * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
- * The macros are prefixed with 'SYSID_QSYS_'.
+ * Macros for device 'FPGA_Mem', class 'altera_avalon_onchip_memory2'
+ * The macros are prefixed with 'FPGA_MEM_'.
  * The prefix is the slave descriptor.
  */
-#define SYSID_QSYS_COMPONENT_TYPE altera_avalon_sysid_qsys
-#define SYSID_QSYS_COMPONENT_NAME sysid_qsys
-#define SYSID_QSYS_BASE 0x1000
-#define SYSID_QSYS_SPAN 8
-#define SYSID_QSYS_END 0x1007
-#define SYSID_QSYS_ID 2899645186
-#define SYSID_QSYS_TIMESTAMP 1492500749
+#define FPGA_MEM_COMPONENT_TYPE altera_avalon_onchip_memory2
+#define FPGA_MEM_COMPONENT_NAME FPGA_Mem
+#define FPGA_MEM_BASE 0x0
+#define FPGA_MEM_SPAN 196608
+#define FPGA_MEM_END 0x2ffff
+#define FPGA_MEM_ALLOW_IN_SYSTEM_MEMORY_CONTENT_EDITOR 0
+#define FPGA_MEM_ALLOW_MRAM_SIM_CONTENTS_ONLY_FILE 0
+#define FPGA_MEM_CONTENTS_INFO ""
+#define FPGA_MEM_DUAL_PORT 1
+#define FPGA_MEM_GUI_RAM_BLOCK_TYPE M10K
+#define FPGA_MEM_INIT_CONTENTS_FILE soc_system_FPGA_Mem
+#define FPGA_MEM_INIT_MEM_CONTENT 1
+#define FPGA_MEM_INSTANCE_ID NONE
+#define FPGA_MEM_NON_DEFAULT_INIT_FILE_ENABLED 0
+#define FPGA_MEM_RAM_BLOCK_TYPE M10K
+#define FPGA_MEM_READ_DURING_WRITE_MODE OLD_DATA
+#define FPGA_MEM_SINGLE_CLOCK_OP 1
+#define FPGA_MEM_SIZE_MULTIPLE 1
+#define FPGA_MEM_SIZE_VALUE 196608
+#define FPGA_MEM_WRITABLE 1
+#define FPGA_MEM_MEMORY_INFO_DAT_SYM_INSTALL_DIR SIM_DIR
+#define FPGA_MEM_MEMORY_INFO_GENERATE_DAT_SYM 1
+#define FPGA_MEM_MEMORY_INFO_GENERATE_HEX 1
+#define FPGA_MEM_MEMORY_INFO_HAS_BYTE_LANE 0
+#define FPGA_MEM_MEMORY_INFO_HEX_INSTALL_DIR QPF_DIR
+#define FPGA_MEM_MEMORY_INFO_MEM_INIT_DATA_WIDTH 128
+#define FPGA_MEM_MEMORY_INFO_MEM_INIT_FILENAME soc_system_FPGA_Mem
+
+/*
+ * Macros for device 'Instruction_Mem', class 'altera_avalon_onchip_memory2'
+ * The macros are prefixed with 'INSTRUCTION_MEM_'.
+ * The prefix is the slave descriptor.
+ */
+#define INSTRUCTION_MEM_COMPONENT_TYPE altera_avalon_onchip_memory2
+#define INSTRUCTION_MEM_COMPONENT_NAME Instruction_Mem
+#define INSTRUCTION_MEM_BASE 0x0
+#define INSTRUCTION_MEM_SPAN 4096
+#define INSTRUCTION_MEM_END 0xfff
+#define INSTRUCTION_MEM_ALLOW_IN_SYSTEM_MEMORY_CONTENT_EDITOR 0
+#define INSTRUCTION_MEM_ALLOW_MRAM_SIM_CONTENTS_ONLY_FILE 0
+#define INSTRUCTION_MEM_CONTENTS_INFO ""
+#define INSTRUCTION_MEM_DUAL_PORT 1
+#define INSTRUCTION_MEM_GUI_RAM_BLOCK_TYPE M10K
+#define INSTRUCTION_MEM_INIT_CONTENTS_FILE soc_system_Instruction_Mem
+#define INSTRUCTION_MEM_INIT_MEM_CONTENT 1
+#define INSTRUCTION_MEM_INSTANCE_ID NONE
+#define INSTRUCTION_MEM_NON_DEFAULT_INIT_FILE_ENABLED 0
+#define INSTRUCTION_MEM_RAM_BLOCK_TYPE M10K
+#define INSTRUCTION_MEM_READ_DURING_WRITE_MODE OLD_DATA
+#define INSTRUCTION_MEM_SINGLE_CLOCK_OP 1
+#define INSTRUCTION_MEM_SIZE_MULTIPLE 1
+#define INSTRUCTION_MEM_SIZE_VALUE 4096
+#define INSTRUCTION_MEM_WRITABLE 1
+#define INSTRUCTION_MEM_MEMORY_INFO_DAT_SYM_INSTALL_DIR SIM_DIR
+#define INSTRUCTION_MEM_MEMORY_INFO_GENERATE_DAT_SYM 1
+#define INSTRUCTION_MEM_MEMORY_INFO_GENERATE_HEX 1
+#define INSTRUCTION_MEM_MEMORY_INFO_HAS_BYTE_LANE 0
+#define INSTRUCTION_MEM_MEMORY_INFO_HEX_INSTALL_DIR QPF_DIR
+#define INSTRUCTION_MEM_MEMORY_INFO_MEM_INIT_DATA_WIDTH 32
+#define INSTRUCTION_MEM_MEMORY_INFO_MEM_INIT_FILENAME soc_system_Instruction_Mem
 
 /*
  * Macros for device 'led_pio', class 'altera_avalon_pio'
@@ -56,83 +109,6 @@
 #define LED_PIO_HAS_TRI 0
 #define LED_PIO_IRQ_TYPE NONE
 #define LED_PIO_RESET_VALUE 0
-
-/*
- * Macros for device 'dipsw_pio', class 'altera_avalon_pio'
- * The macros are prefixed with 'DIPSW_PIO_'.
- * The prefix is the slave descriptor.
- */
-#define DIPSW_PIO_COMPONENT_TYPE altera_avalon_pio
-#define DIPSW_PIO_COMPONENT_NAME dipsw_pio
-#define DIPSW_PIO_BASE 0x4000
-#define DIPSW_PIO_SPAN 16
-#define DIPSW_PIO_END 0x400f
-#define DIPSW_PIO_IRQ 0
-#define DIPSW_PIO_BIT_CLEARING_EDGE_REGISTER 1
-#define DIPSW_PIO_BIT_MODIFYING_OUTPUT_REGISTER 0
-#define DIPSW_PIO_CAPTURE 1
-#define DIPSW_PIO_DATA_WIDTH 10
-#define DIPSW_PIO_DO_TEST_BENCH_WIRING 0
-#define DIPSW_PIO_DRIVEN_SIM_VALUE 0
-#define DIPSW_PIO_EDGE_TYPE ANY
-#define DIPSW_PIO_FREQ 50000000
-#define DIPSW_PIO_HAS_IN 1
-#define DIPSW_PIO_HAS_OUT 0
-#define DIPSW_PIO_HAS_TRI 0
-#define DIPSW_PIO_IRQ_TYPE EDGE
-#define DIPSW_PIO_RESET_VALUE 0
-
-/*
- * Macros for device 'button_pio', class 'altera_avalon_pio'
- * The macros are prefixed with 'BUTTON_PIO_'.
- * The prefix is the slave descriptor.
- */
-#define BUTTON_PIO_COMPONENT_TYPE altera_avalon_pio
-#define BUTTON_PIO_COMPONENT_NAME button_pio
-#define BUTTON_PIO_BASE 0x5000
-#define BUTTON_PIO_SPAN 16
-#define BUTTON_PIO_END 0x500f
-#define BUTTON_PIO_IRQ 1
-#define BUTTON_PIO_BIT_CLEARING_EDGE_REGISTER 1
-#define BUTTON_PIO_BIT_MODIFYING_OUTPUT_REGISTER 0
-#define BUTTON_PIO_CAPTURE 1
-#define BUTTON_PIO_DATA_WIDTH 4
-#define BUTTON_PIO_DO_TEST_BENCH_WIRING 0
-#define BUTTON_PIO_DRIVEN_SIM_VALUE 0
-#define BUTTON_PIO_EDGE_TYPE FALLING
-#define BUTTON_PIO_FREQ 50000000
-#define BUTTON_PIO_HAS_IN 1
-#define BUTTON_PIO_HAS_OUT 0
-#define BUTTON_PIO_HAS_TRI 0
-#define BUTTON_PIO_IRQ_TYPE EDGE
-#define BUTTON_PIO_RESET_VALUE 0
-
-/*
- * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
- * The macros are prefixed with 'JTAG_UART_'.
- * The prefix is the slave descriptor.
- */
-#define JTAG_UART_COMPONENT_TYPE altera_avalon_jtag_uart
-#define JTAG_UART_COMPONENT_NAME jtag_uart
-#define JTAG_UART_BASE 0x20000
-#define JTAG_UART_SPAN 8
-#define JTAG_UART_END 0x20007
-#define JTAG_UART_IRQ 2
-#define JTAG_UART_READ_DEPTH 64
-#define JTAG_UART_READ_THRESHOLD 8
-#define JTAG_UART_WRITE_DEPTH 64
-#define JTAG_UART_WRITE_THRESHOLD 8
-
-/*
- * Macros for device 'ILC', class 'interrupt_latency_counter'
- * The macros are prefixed with 'ILC_'.
- * The prefix is the slave descriptor.
- */
-#define ILC_COMPONENT_TYPE interrupt_latency_counter
-#define ILC_COMPONENT_NAME ILC
-#define ILC_BASE 0x30000
-#define ILC_SPAN 256
-#define ILC_END 0x300ff
 
 
 #endif /* _ALTERA_HPS_0_H_ */
