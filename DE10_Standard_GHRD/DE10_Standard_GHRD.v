@@ -209,6 +209,9 @@ module DE10_Standard_GHRD(
 //=======================================================
 //  REG/WIRE declarations
 //=======================================================
+//=======================================================
+//  REG/WIRE declarations
+//=======================================================
   wire  hps_fpga_reset_n;
   wire [3:0] fpga_debounced_buttons;
   wire [8:0]  fpga_led_internal;
@@ -218,23 +221,24 @@ module DE10_Standard_GHRD(
   wire        hps_debug_reset;
   wire [27:0] stm_hw_events;
   wire        fpga_clk_50;
-
-  wire [9:0]  m10k_address;                      //                    mem_fpga.address
-	reg         m10k_chipselect;                   //                            .chipselect
-	wire        m10k_clken;                        //                            .clken
-	wire        m10k_write;                        //                            .write
-	wire [31:0] m10k_readdata;                     //                            .readdata
-	wire [31:0] m10k_writedata;                    //                            .writedata
-	wire [3:0]  m10k_byteenable;                   //                            .byteenable
-
-  wire [9:0]  instruction_RAM_address;               //             mem_instruction.address
-	reg         instruction_RAM_chipselect;            //                            .chipselect
-	wire        instruction_RAM_clken;                 //                            .clken
-	reg         instruction_RAM_write;                 //                            .write
-	wire [31:0] instruction_RAM_readdata;              //                            .readdata
-	wire [31:0] instruction_RAM_writedata;             //                            .writedata
-	wire [3:0]  instruction_RAM_byteenable;            //                            .byteenable
-
+  
+  wire [7:0]   fpga_mem_address;                      //                    fpga_mem.address
+  wire         fpga_mem_chipselect;                   //                            .chipselect
+  wire         fpga_mem_clken;                        //                            .clken
+  wire         fpga_mem_write;                        //                            .write
+  wire [127:0] fpga_mem_readdata;                     //                            .readdata
+  wire [127:0] fpga_mem_writedata;                    //                            .writedata
+  wire [15:0]  fpga_mem_byteenable;                   //                            .byteenable
+  wire         hps_0_f2h_cold_reset_req_reset_n;      //    hps_0_f2h_cold_reset_req.reset_n
+  wire         hps_0_f2h_debug_reset_req_reset_n;     //   hps_0_f2h_debug_reset_req.reset_n
+  
+  wire [9:0]   instruction_mem_address;               //             instruction_mem.address
+  wire         instruction_mem_chipselect;            //                            .chipselect
+  wire         instruction_mem_clken;                 //                            .clken
+  wire         instruction_mem_write;                 //                            .write
+  wire [31:0]  instruction_mem_readdata;              //                            .readdata
+  wire [31:0]  instruction_mem_writedata;             //                            .writedata
+  wire [3:0]   instruction_mem_byteenable;            //                            .byteenable
 // connection of internal logics
   assign LEDR[9:1] = fpga_led_internal;
   assign stm_hw_events    = {{4{1'b0}}, SW, fpga_led_internal, fpga_debounced_buttons};
@@ -338,33 +342,29 @@ soc_system u0 (
 
 			
 		  .led_pio_external_connection_export    ( fpga_led_internal ),               //                               led_pio_external_connection.export                     
-//        .dipsw_pio_external_connection_export  ( SW ),                 //                               dipsw_pio_external_connection.export
-//        .button_pio_external_connection_export ( fpga_debounced_buttons ),              //                               button_pio_external_connection.export 
-		  .hps_0_h2f_reset_reset_n               ( hps_fpga_reset_n ),                //                hps_0_h2f_reset.reset_n
+        .hps_0_h2f_reset_reset_n               ( hps_fpga_reset_n ),                //                hps_0_h2f_reset.reset_n
 		  .hps_0_f2h_cold_reset_req_reset_n      (~hps_cold_reset ),      //       hps_0_f2h_cold_reset_req.reset_n
 		  .hps_0_f2h_debug_reset_req_reset_n     (~hps_debug_reset ),     //      hps_0_f2h_debug_reset_req.reset_n
 		  .hps_0_f2h_stm_hw_events_stm_hwevents  (stm_hw_events ),  //        hps_0_f2h_stm_hw_events.stm_hwevents
 		  .hps_0_f2h_warm_reset_req_reset_n      (~hps_warm_reset ),      //       hps_0_f2h_warm_reset_req.reset_n
-      
-      //FPGA Avalon Slave mm M10K
-      .mem_fpga_address                      (m10k_address),                      //                    mem_fpga.address
-        .mem_fpga_chipselect                   (m10k_chipselect),                   //                            .chipselect
-        .mem_fpga_clken                        (m10k_clken),                        //                            .clken
-        .mem_fpga_write                        (m10k_write),                        //                            .write
-        .mem_fpga_readdata                     (m10k_readdata),                     //                            .readdata
-        .mem_fpga_writedata                    (m10k_writedata),                    //                            .writedata
-        .mem_fpga_byteenable                   (m10k_byteenable),
-      
-      //FPGA LW Slave mm M10K
-      .mem_instruction_address               (instruction_RAM_address),               //             mem_instruction.address
-        .mem_instruction_chipselect            (instruction_RAM_chipselect),            //                            .chipselect
-        .mem_instruction_clken                 (instruction_RAM_clken),                 //                            .clken
-        .mem_instruction_write                 (instruction_RAM_write),                 //                            .write
-        .mem_instruction_readdata              (instruction_RAM_readdata),              //                            .readdata
-        .mem_instruction_writedata             (instruction_RAM_writedata),             //                            .writedata
-        .mem_instruction_byteenable            (instruction_RAM_byteenable)             //                            .byteenable
+		  
+		  .fpga_mem_address                      (fpga_mem_address),                      //                    fpga_mem.address
+        .fpga_mem_chipselect                   (fpga_mem_chipselect),                   //                            .chipselect
+        .fpga_mem_clken                        (fpga_mem_clken),                        //                            .clken
+        .fpga_mem_write                        (fpga_mem_write),                        //                            .write
+        .fpga_mem_readdata                     (fpga_mem_readdata),                     //                            .readdata
+        .fpga_mem_writedata                    (fpga_mem_writedata),                    //                            .writedata
+        .fpga_mem_byteenable                   (fpga_mem_byteenable),                   //                            .byteenable
+        .instruction_mem_address               (instruction_mem_address),               //             instruction_mem.address
+        .instruction_mem_chipselect            (instruction_mem_chipselect),            //                            .chipselect
+        .instruction_mem_clken                 (instruction_mem_clken),                 //                            .clken
+        .instruction_mem_write                 (instruction_mem_write),                 //                            .write
+        .instruction_mem_readdata              (instruction_mem_readdata),              //                            .readdata
+        .instruction_mem_writedata             (instruction_mem_writedata),             //                            .writedata
+        .instruction_mem_byteenable            (instruction_mem_byteenable)             //                            .byteenable
     );
 
+	 
 	 // Debounce logic to clean out glitches within 1ms
 debounce debounce_inst (
   .clk                                  (fpga_clk_50),
@@ -412,25 +412,7 @@ altera_edge_detector pulse_debug_reset (
   defparam pulse_debug_reset.PULSE_EXT = 32;
   defparam pulse_debug_reset.EDGE_TYPE = 1;
   defparam pulse_debug_reset.IGNORE_RST_WHILE_BUSY = 1;
-
-reg [23:0] mem_FPGA_Data;
-
-SevenSegmentDisplay HexDisplay (
-  .BCH0 (mem_FPGA_Data[3:0]),
-  .BCH1 (mem_FPGA_Data[7:4]),
-  .BCH2 (mem_FPGA_Data[11:8]),
-  .BCH3 (mem_FPGA_Data[15:12]),
-  .BCH4 (mem_FPGA_Data[19:16]),
-  .BCH5 (mem_FPGA_Data[23:20]),
-  .blank(6'b00_0000),
-  .HEX0(HEX0),
-  .HEX1(HEX1),
-  .HEX2(HEX2),
-  .HEX3(HEX3),
-  .HEX4(HEX4),
-  .HEX5(HEX5)
-);
-
+  
 reg [25:0] counter; 
 reg  led_level;
 always @(posedge fpga_clk_50 or negedge hps_fpga_reset_n)
@@ -451,50 +433,6 @@ else
 end
 
 assign LEDR[0]=led_level;
-
-wire check_mem_FPGA;
-wire prep_mem_FPGA;
-assign check_mem_FPGA = (counter % 5) == 4;
-assign prep_mem_FPGA = (counter % 5) == 3;
-
-assign m10k_write = 1'b0;
-assign m10k_clken = 1'b1;
-assign m10k_address = 10'd0;
-assign m10k_writedata = 32'd0;
-assign m10k_byteenable = 4'hF;
-
-always @ (prep_mem_FPGA)
-begin 
-  if (prep_mem_FPGA) begin
-    m10k_chipselect = 1'b1;
-  end
-  else begin
-    m10k_chipselect = 1'b0;
-  end
-end
-
-always @ (posedge check_mem_FPGA)
-begin
-  mem_FPGA_Data <= m10k_readdata[23:0];
-end
-
-assign instruction_RAM_address = 10'd0;
-assign instruction_RAM_clken = 1'b1;
-assign instruction_RAM_writedata = 32'd100;
-assign instruction_RAM_byteenable = 4'hF;
-
-always @ (check_mem_FPGA)
-begin
-  if (check_mem_FPGA) begin
-    instruction_RAM_chipselect = 1'b1;
-    instruction_RAM_write = 1'b1;
-  end
-  else begin
-    instruction_RAM_chipselect = 1'b0;
-    instruction_RAM_write = 1'b0;
-  end
-end
-
 endmodule
 
   

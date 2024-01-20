@@ -1,6 +1,13 @@
 
 module soc_system (
 	clk_clk,
+	fpga_mem_address,
+	fpga_mem_chipselect,
+	fpga_mem_clken,
+	fpga_mem_write,
+	fpga_mem_readdata,
+	fpga_mem_writedata,
+	fpga_mem_byteenable,
 	hps_0_f2h_cold_reset_req_reset_n,
 	hps_0_f2h_debug_reset_req_reset_n,
 	hps_0_f2h_stm_hw_events_stm_hwevents,
@@ -68,14 +75,14 @@ module soc_system (
 	hps_0_hps_io_hps_io_gpio_inst_GPIO53,
 	hps_0_hps_io_hps_io_gpio_inst_GPIO54,
 	hps_0_hps_io_hps_io_gpio_inst_GPIO61,
+	instruction_mem_address,
+	instruction_mem_chipselect,
+	instruction_mem_clken,
+	instruction_mem_write,
+	instruction_mem_readdata,
+	instruction_mem_writedata,
+	instruction_mem_byteenable,
 	led_pio_external_connection_export,
-	mem_fpga_address,
-	mem_fpga_chipselect,
-	mem_fpga_clken,
-	mem_fpga_write,
-	mem_fpga_readdata,
-	mem_fpga_writedata,
-	mem_fpga_byteenable,
 	memory_mem_a,
 	memory_mem_ba,
 	memory_mem_ck,
@@ -92,16 +99,16 @@ module soc_system (
 	memory_mem_odt,
 	memory_mem_dm,
 	memory_oct_rzqin,
-	reset_reset_n,
-	mem_instruction_address,
-	mem_instruction_chipselect,
-	mem_instruction_clken,
-	mem_instruction_write,
-	mem_instruction_readdata,
-	mem_instruction_writedata,
-	mem_instruction_byteenable);	
+	reset_reset_n);	
 
 	input		clk_clk;
+	input	[13:0]	fpga_mem_address;
+	input		fpga_mem_chipselect;
+	input		fpga_mem_clken;
+	input		fpga_mem_write;
+	output	[127:0]	fpga_mem_readdata;
+	input	[127:0]	fpga_mem_writedata;
+	input	[15:0]	fpga_mem_byteenable;
 	input		hps_0_f2h_cold_reset_req_reset_n;
 	input		hps_0_f2h_debug_reset_req_reset_n;
 	input	[27:0]	hps_0_f2h_stm_hw_events_stm_hwevents;
@@ -169,14 +176,14 @@ module soc_system (
 	inout		hps_0_hps_io_hps_io_gpio_inst_GPIO53;
 	inout		hps_0_hps_io_hps_io_gpio_inst_GPIO54;
 	inout		hps_0_hps_io_hps_io_gpio_inst_GPIO61;
+	input	[9:0]	instruction_mem_address;
+	input		instruction_mem_chipselect;
+	input		instruction_mem_clken;
+	input		instruction_mem_write;
+	output	[31:0]	instruction_mem_readdata;
+	input	[31:0]	instruction_mem_writedata;
+	input	[3:0]	instruction_mem_byteenable;
 	output	[9:0]	led_pio_external_connection_export;
-	input	[9:0]	mem_fpga_address;
-	input		mem_fpga_chipselect;
-	input		mem_fpga_clken;
-	input		mem_fpga_write;
-	output	[31:0]	mem_fpga_readdata;
-	input	[31:0]	mem_fpga_writedata;
-	input	[3:0]	mem_fpga_byteenable;
 	output	[14:0]	memory_mem_a;
 	output	[2:0]	memory_mem_ba;
 	output		memory_mem_ck;
@@ -194,11 +201,4 @@ module soc_system (
 	output	[3:0]	memory_mem_dm;
 	input		memory_oct_rzqin;
 	input		reset_reset_n;
-	input	[9:0]	mem_instruction_address;
-	input		mem_instruction_chipselect;
-	input		mem_instruction_clken;
-	input		mem_instruction_write;
-	output	[31:0]	mem_instruction_readdata;
-	input	[31:0]	mem_instruction_writedata;
-	input	[3:0]	mem_instruction_byteenable;
 endmodule

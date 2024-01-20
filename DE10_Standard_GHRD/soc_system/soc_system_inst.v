@@ -1,5 +1,12 @@
 	soc_system u0 (
 		.clk_clk                               (<connected-to-clk_clk>),                               //                         clk.clk
+		.fpga_mem_address                      (<connected-to-fpga_mem_address>),                      //                    fpga_mem.address
+		.fpga_mem_chipselect                   (<connected-to-fpga_mem_chipselect>),                   //                            .chipselect
+		.fpga_mem_clken                        (<connected-to-fpga_mem_clken>),                        //                            .clken
+		.fpga_mem_write                        (<connected-to-fpga_mem_write>),                        //                            .write
+		.fpga_mem_readdata                     (<connected-to-fpga_mem_readdata>),                     //                            .readdata
+		.fpga_mem_writedata                    (<connected-to-fpga_mem_writedata>),                    //                            .writedata
+		.fpga_mem_byteenable                   (<connected-to-fpga_mem_byteenable>),                   //                            .byteenable
 		.hps_0_f2h_cold_reset_req_reset_n      (<connected-to-hps_0_f2h_cold_reset_req_reset_n>),      //    hps_0_f2h_cold_reset_req.reset_n
 		.hps_0_f2h_debug_reset_req_reset_n     (<connected-to-hps_0_f2h_debug_reset_req_reset_n>),     //   hps_0_f2h_debug_reset_req.reset_n
 		.hps_0_f2h_stm_hw_events_stm_hwevents  (<connected-to-hps_0_f2h_stm_hw_events_stm_hwevents>),  //     hps_0_f2h_stm_hw_events.stm_hwevents
@@ -67,14 +74,14 @@
 		.hps_0_hps_io_hps_io_gpio_inst_GPIO53  (<connected-to-hps_0_hps_io_hps_io_gpio_inst_GPIO53>),  //                            .hps_io_gpio_inst_GPIO53
 		.hps_0_hps_io_hps_io_gpio_inst_GPIO54  (<connected-to-hps_0_hps_io_hps_io_gpio_inst_GPIO54>),  //                            .hps_io_gpio_inst_GPIO54
 		.hps_0_hps_io_hps_io_gpio_inst_GPIO61  (<connected-to-hps_0_hps_io_hps_io_gpio_inst_GPIO61>),  //                            .hps_io_gpio_inst_GPIO61
+		.instruction_mem_address               (<connected-to-instruction_mem_address>),               //             instruction_mem.address
+		.instruction_mem_chipselect            (<connected-to-instruction_mem_chipselect>),            //                            .chipselect
+		.instruction_mem_clken                 (<connected-to-instruction_mem_clken>),                 //                            .clken
+		.instruction_mem_write                 (<connected-to-instruction_mem_write>),                 //                            .write
+		.instruction_mem_readdata              (<connected-to-instruction_mem_readdata>),              //                            .readdata
+		.instruction_mem_writedata             (<connected-to-instruction_mem_writedata>),             //                            .writedata
+		.instruction_mem_byteenable            (<connected-to-instruction_mem_byteenable>),            //                            .byteenable
 		.led_pio_external_connection_export    (<connected-to-led_pio_external_connection_export>),    // led_pio_external_connection.export
-		.mem_fpga_address                      (<connected-to-mem_fpga_address>),                      //                    mem_fpga.address
-		.mem_fpga_chipselect                   (<connected-to-mem_fpga_chipselect>),                   //                            .chipselect
-		.mem_fpga_clken                        (<connected-to-mem_fpga_clken>),                        //                            .clken
-		.mem_fpga_write                        (<connected-to-mem_fpga_write>),                        //                            .write
-		.mem_fpga_readdata                     (<connected-to-mem_fpga_readdata>),                     //                            .readdata
-		.mem_fpga_writedata                    (<connected-to-mem_fpga_writedata>),                    //                            .writedata
-		.mem_fpga_byteenable                   (<connected-to-mem_fpga_byteenable>),                   //                            .byteenable
 		.memory_mem_a                          (<connected-to-memory_mem_a>),                          //                      memory.mem_a
 		.memory_mem_ba                         (<connected-to-memory_mem_ba>),                         //                            .mem_ba
 		.memory_mem_ck                         (<connected-to-memory_mem_ck>),                         //                            .mem_ck
@@ -91,13 +98,6 @@
 		.memory_mem_odt                        (<connected-to-memory_mem_odt>),                        //                            .mem_odt
 		.memory_mem_dm                         (<connected-to-memory_mem_dm>),                         //                            .mem_dm
 		.memory_oct_rzqin                      (<connected-to-memory_oct_rzqin>),                      //                            .oct_rzqin
-		.reset_reset_n                         (<connected-to-reset_reset_n>),                         //                       reset.reset_n
-		.mem_instruction_address               (<connected-to-mem_instruction_address>),               //             mem_instruction.address
-		.mem_instruction_chipselect            (<connected-to-mem_instruction_chipselect>),            //                            .chipselect
-		.mem_instruction_clken                 (<connected-to-mem_instruction_clken>),                 //                            .clken
-		.mem_instruction_write                 (<connected-to-mem_instruction_write>),                 //                            .write
-		.mem_instruction_readdata              (<connected-to-mem_instruction_readdata>),              //                            .readdata
-		.mem_instruction_writedata             (<connected-to-mem_instruction_writedata>),             //                            .writedata
-		.mem_instruction_byteenable            (<connected-to-mem_instruction_byteenable>)             //                            .byteenable
+		.reset_reset_n                         (<connected-to-reset_reset_n>)                          //                       reset.reset_n
 	);
 
