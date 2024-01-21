@@ -32,7 +32,7 @@ module FSM
 
   Register #(`DATA_WIDTH) reg_op (.D(meta_data), .en(save_op), .clear(idle), .clock, .Q(meta_data_reg));
 
-  assign dim_total = (meta_data_reg.dimA1 / `BANDWIDTH) * (meta_data_reg.dimA2 / `BANDWIDTH);
+  assign dim_total = {meta_data_reg.dimA1, meta_data_reg.dimA2};
 
   always_comb begin
     case (meta_data_reg.op_code)

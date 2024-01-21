@@ -11,16 +11,18 @@ def main():
     # Generate two 8x8 matrices
     # matrix1 = generate_matrix(size)
     # matrix2 = generate_matrix(size)
-    matrix1 = np.random.randint(1, 11, size=(3*8, 2*8))
-    matrix2 = np.random.randint(1, 11, size=(2*8, 2*8))
+    matrix1 = np.random.randint(1, 11, size=(2*8, 3*8))
+    matrix2 = np.random.randint(1, 11, size=(2*8, 3*8))
 
     # Compute the product of the two matrices
-    product = np.dot(matrix1, matrix2)
+    # product = np.dot(matrix1, matrix2)
+    product = np.multiply(matrix1, 3)
 
     # Print the matrices and their product
     print("Matrix 1:\n", matrix1)
     print("\nMatrix 2:\n", matrix2)
     print("\nProduct of Matrix 1 and Matrix 2:\n", product)
+    # print("\Sum of Matrix 1 and Matrix 2:\n", sum)
 
     # # Print the flattened matrices
     # print("\nFlattened Matrix 1 (Reversed):", ', '.join(map(str, matrix1.flatten()[::-1])))
