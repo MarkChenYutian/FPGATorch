@@ -32,7 +32,7 @@ int main() {
 	int led_mask;
 	void *h2p_lw_led_addr;
 	void *Mat_A_Base;
-	void *Mat_B_Base;
+	// void *Mat_B_Base;
 	void *Mat_C_Base;
 	uint32_t Instruction;
 	printf("Hello\n");
@@ -63,7 +63,7 @@ int main() {
 		return( 1 );
 	}
 	Mat_A_Base = fpga_mem_base + ( ( unsigned long )( FPGA_MEM_A_BASE ) & ( unsigned long )( H2F_AXI_MASK ) );
-	Mat_B_Base = fpga_mem_base + ( ( unsigned long )( FPGA_MEM_B_BASE ) & ( unsigned long )( H2F_AXI_MASK ) );
+	// Mat_B_Base = fpga_mem_base + ( ( unsigned long )( FPGA_MEM_B_BASE ) & ( unsigned long )( H2F_AXI_MASK ) );
 	Mat_C_Base = fpga_mem_base + ( ( unsigned long )( FPGA_MEM_C_BASE ) & ( unsigned long )( H2F_AXI_MASK ) );
 
 	Instruction = ((0x4 & 0x000F) << 28) | ((0x2 & 0x003F) << 21) | ((0x2 & 0x003F) << 14) | 0x0000;
