@@ -8,8 +8,10 @@
 module FSM
   (input logic clock, reset,
    input meta_data_t meta_data,
+   input logic MatMul_done,
    input logic [`SINGLE_ACCESS-1:0][`BANDWIDTH-1:0][`DATA_WIDTH-1:0] dataRes,
-   output op_code_t op_code,
+   input mem_t memA_Mul, memB_Mul, memRes_Mul,
+   output meta_data_t meta_data_reg,
    output mem_t memOp, memA, memB, memRes,
    output logic idle, save_op, save_scalar, save_Res,
    output logic [`SINGLE_ACCESS-1:0] save_A, save_B);
@@ -17,7 +19,7 @@ module FSM
   enum logic [2:0] {WAIT_OP, MUL, READ_SCALAR, READ, COMPUTE, WRITE} state, nextState;
 
   logic [`ADDR_WIDTH-1:0] read_ptr, write_ptr, block_ptr;
-  logic [(`DIM_WIDTH-`BANDWIDTH)*2-1:0] dim_total;
+  logic [(`DIM_WIDTH-$clog2(`BANDWIDTH))*2-1:0] dim_total;
   logic [`CYCLE_WIDTH-1:0] op_count, op_cycle;
   logic read_next, write_next, next_block, op_compute;
   
@@ -28,18 +30,12 @@ module FSM
 
   Counter #(`CYCLE_WIDTH, 1) compute (.D(0), .en(op_compute), .clear(reset), .load(next_block | idle), .clock, .up(1'b1), .Q(op_count));
 
-  logic [`DIM_WIDTH-1:0] dimA1, dimA2, dimB1, dimB2;
+  Register #(`DATA_WIDTH) reg_op (.D(meta_data), .en(save_op), .clear(idle), .clock, .Q(meta_data_reg));
 
-  Register #(`OP_WIDTH) reg_op (.D(meta_data.op_code), .en(save_op), .clear(idle), .clock, .Q(op_code));
-  Register #(`DIM_WIDTH) reg_dimA1 (.D(meta_data.dimA1), .en(save_op), .clear(idle), .clock, .Q(dimA1));
-  Register #(`DIM_WIDTH) reg_dimA2 (.D(meta_data.dimA2), .en(save_op), .clear(idle), .clock, .Q(dimA2));
-  Register #(`DIM_WIDTH) reg_dimB1 (.D(meta_data.dimB1), .en(save_op), .clear(idle), .clock, .Q(dimB1));
-  Register #(`DIM_WIDTH) reg_dimB2 (.D(meta_data.dimB2), .en(save_op), .clear(idle), .clock, .Q(dimB2));
-
-  assign dim_total = (dimA1 / `BANDWIDTH) * (dimA2 / `BANDWIDTH);
+  assign dim_total = (meta_data_reg.dimA1 / `BANDWIDTH) * (meta_data_reg.dimA2 / `BANDWIDTH);
 
   always_comb begin
-    case (op_code)
+    case (meta_data_reg.op_code)
       MAT_ADD: op_cycle = `CYCLE_ADD;
       MAT_SCAL_MUL: op_cycle = `CYCLE_MUL;
       MAT_SCAL_DIV: op_cycle = `CYCLE_DIV;
@@ -87,9 +83,8 @@ module FSM
           save_op = 1'b1;
           memA.read = memA_Mul.read;
           memB.read = memB_Mul.read;
-          memA.address = `DATAA_ADDR + block_ptr + read_ptr;
-          memB.address = `DATAB_ADDR + block_ptr + read_ptr;
-          read_next = 1'b1;
+          memA.address = memA_Mul.address;
+          memB.address = memB_Mul.address;
         end else begin
           nextState = WAIT_OP;
           idle = 1'b1;
@@ -97,10 +92,23 @@ module FSM
           memOp.address = `OP_ADDR;
         end
       end
+      MUL: begin
+        if (~MatMul_done) begin
+          nextState = MUL;
+          memA = memA_Mul;
+          memB = memB_Mul;
+          memRes = memRes_Mul;
+        end else begin
+          nextState = WAIT_OP;
+          memOp.write = 1'b1;
+          memOp.address = `OP_ADDR;
+          memOp.writedata = 0;
+        end
+      end
       READ_SCALAR: begin
         nextState = READ;
         memA.read = 1'b1;
-        memB.read = op_code == MAT_ADD;
+        memB.read = meta_data_reg.op_code == MAT_ADD;
         memA.address = `DATAA_ADDR + block_ptr + read_ptr;
         memB.address = `DATAB_ADDR + block_ptr + read_ptr;
         read_next = 1'b1;
@@ -108,10 +116,10 @@ module FSM
       end
       READ: begin
         save_A[read_ptr-1] = 1'b1;
-        save_B[read_ptr-1] = op_code == MAT_ADD;
+        save_B[read_ptr-1] = meta_data_reg.op_code == MAT_ADD;
         if (read_ptr < `SINGLE_ACCESS) begin
           memA.read = 1'b1;
-          memB.read = op_code == MAT_ADD;
+          memB.read = meta_data_reg.op_code == MAT_ADD;
           memA.address = `DATAA_ADDR + block_ptr + read_ptr;
           memB.address = `DATAB_ADDR + block_ptr + read_ptr;
           read_next = 1'b1;
@@ -140,7 +148,7 @@ module FSM
           next_block = 1'b1;
           nextState = READ;
           memA.read = 1'b1;
-          memB.read = op_code == MAT_ADD;
+          memB.read = meta_data_reg.op_code == MAT_ADD;
           memA.address = `DATAA_ADDR + block_ptr + read_ptr;
           memB.address = `DATAB_ADDR + block_ptr + read_ptr;
           read_next = 1'b1;
@@ -168,11 +176,11 @@ module MatMem
   output mem_t memOp, memA, memB, memRes,
   input logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdataOp, readdataA, readdataB);
 
-  meta_data_t meta_data;
+  meta_data_t meta_data, meta_data_reg;
+  mem_t memA_Mul, memB_Mul, memRes_Mul;
   logic [`SINGLE_ACCESS-1:0][`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdataA_reg, readdataB_reg, dataRes, dataRes_reg, dataRes_Add, dataRes_ScalMul;
-  op_code_t op_code;
   logic [`DATA_WIDTH-1:0] scalar_reg;
-  logic idle, save_op, save_scalar, save_Res;
+  logic idle, save_op, save_scalar, save_Res, MatMul_done;
   logic [`SINGLE_ACCESS-1:0] save_A, save_B;
 
   FSM fsm (.meta_data(readdataOp), .*);
@@ -190,7 +198,7 @@ module MatMem
       for (j = 0; j < `BANDWIDTH; j = j + 1)
       begin : multiple_bandwidth
         MatAdd add (.clock, .reset, .dataA(readdataA_reg[i][j]),
-                    .dataB((op_code == MAT_ADD) ? readdataB_reg[i][j] : scalar_reg),
+                    .dataB((meta_data_reg.op_code == MAT_ADD) ? readdataB_reg[i][j] : scalar_reg),
                     .dataC(dataRes_Add[i][j]));
         MatScalMul mult (.clock, .reset, .dataA(readdataA_reg[i][j]),
                          .scalar(scalar_reg), .dataRes(dataRes_ScalMul[i][j]));
@@ -198,10 +206,11 @@ module MatMem
     end : multiple_reg
   endgenerate
 
-  Mult matmul (.clock, .reset, .MatMul_en(op_code == MAT_MUL), .op(meta_data_reg), .finish(MatMul_done), .);
+  Mult matmul (.clock, .reset, .MatMul_en(meta_data_reg.op_code == MAT_MUL), .op(meta_data_reg), .finish(MatMul_done),
+               .readdataA, .readdataB, .memA(memA_Mul), .memB(memB_Mul), .memC(memRes_Mul));
 
   always_comb begin
-    case (op_code)
+    case (meta_data_reg.op_code)
       MAT_ADD: dataRes = dataRes_Add;
       MAT_SCAL_ADD: dataRes = dataRes_Add;
       MAT_SCAL_MUL: dataRes = dataRes_ScalMul;
@@ -313,10 +322,10 @@ module MatMem_unpack
   MatMem MM(.*);
 
   // M10KControl mem (.read, .write, .address(mem_addr), .writedata(mem_data), .readdata(data));
-  fakemem fakememA (.clock, .read(memA.read), .write(), .address(memA.address), .writedata(), .readdata(readdataA));
-  fakemem fakememB (.clock, .read(memB.read), .write(), .address(memB.address), .writedata(), .readdata(readdataB));
+  fakemem_read fakememA (.clock, .read(memA.read), .address(memA.address), .readdata(readdataA));
+  fakemem_read fakememB (.clock, .read(memB.read), .address(memB.address), .readdata(readdataB));
   fakemem fakememop (.clock, .read(memOp.read), .write(memOp.write), .address(memOp.address), .writedata(memOp.writedata), .readdata(readdataOp));
-  fakemem fakememRes (.clock, .read(), .write(memRes.write), .address(memRes.address), .writedata(memRes.writedata), .readdata());
+  fakemem_write fakememRes (.clock, .write(memRes.write), .address(memRes.address), .writedata(memRes.writedata));
   
   /*
   always_comb begin

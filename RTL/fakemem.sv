@@ -2,9 +2,9 @@
 
 
 module fakemem_read
-  (input logic read, write, clock, 
-   input logic [`ADDR_WIDTH-1:0] addr,
-   output logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] data);
+  (input logic read, clock, 
+   input logic [`ADDR_WIDTH-1:0] address,
+   output logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdata);
 
   logic [511:0][31:0] mem;
 
@@ -12,25 +12,24 @@ module fakemem_read
   assign mem[133:70] = {$shortrealtobits(7), $shortrealtobits(7), $shortrealtobits(2), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(5), $shortrealtobits(5), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(8), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(4), $shortrealtobits(2), $shortrealtobits(7), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(4), $shortrealtobits(9), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(7), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(5), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(4)};
 
   always_ff @(posedge clock) begin
-    if (read) data <= {mem[addr+7], mem[addr+6], mem[addr+5], mem[addr+4],
-                       mem[addr+3], mem[addr+2], mem[addr+1], mem[addr]};
-    else data <= 'b0;
+    if (read) readdata <= {mem[address+7], mem[address+6], mem[address+5], mem[address+4],
+                       mem[address+3], mem[address+2], mem[address+1], mem[address]};
+    else readdata <= 'b0;
   end
 
 endmodule: fakemem_read
 
 
 module fakemem_write
-  (input logic read, write, clock, 
-   input logic [`ADDR_WIDTH-1:0] addr,
-   output logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] data);
+  (input logic write, clock, 
+   input logic [`ADDR_WIDTH-1:0] address,
+   input logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] writedata);
 
   logic [511:0][31:0] mem;
 
   always_ff @(posedge clock) begin
-    if (write) {mem[addr+7], mem[addr+6], mem[addr+5], mem[addr+4],
-                mem[addr+3], mem[addr+2], mem[addr+1], mem[addr]} <= data;
-    else data <= 'b0;
+    if (write) {mem[address+7], mem[address+6], mem[address+5], mem[address+4],
+                mem[address+3], mem[address+2], mem[address+1], mem[address]} <= writedata;
   end
 
 endmodule: fakemem_write

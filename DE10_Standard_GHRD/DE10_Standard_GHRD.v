@@ -461,10 +461,40 @@ else
 end
 
 assign LEDR[0]=led_level;
-reg delay1;
-always @(posedge fpga_clk_50) begin
-  delay1 <= ~KEY[0];
-end
+
+MatMem_unpack RTL(.clock(fpga_clk_50),
+                  .reset(~reset_n),
+                  .fpga_mem_a_address(fpga_mem_a_address),
+                  .fpga_mem_a_chipselect(fpga_mem_a_chipselect),
+                  .fpga_mem_a_clken(fpga_mem_a_clken),
+                  .fpga_mem_a_write(fpga_mem_a_write),
+                  .fpga_mem_a_readdata(fpga_mem_a_readdata),
+                  .fpga_mem_a_writedata(fpga_mem_a_writedata),
+                  .fpga_mem_a_byteenable(fpga_mem_a_byteenable),
+                  .fpga_mem_b_address(fpga_mem_b_address),
+                  .fpga_mem_b_chipselect(fpga_mem_b_chipselect),
+                  .fpga_mem_b_clken(fpga_mem_b_clken),
+                  .fpga_mem_b_write(fpga_mem_b_write),
+                  .fpga_mem_b_readdata(fpga_mem_b_readdata),
+                  .fpga_mem_b_writedata(fpga_mem_b_writedata),
+                  .fpga_mem_b_byteenable(fpga_mem_b_byteenable),
+                  .fpga_mem_c_address(fpga_mem_c_address),
+                  .fpga_mem_c_chipselect(fpga_mem_c_chipselect),
+                  .fpga_mem_c_clken(fpga_mem_c_clken),
+                  .fpga_mem_c_write(fpga_mem_c_write),
+                  .fpga_mem_c_readdata(fpga_mem_c_readdata),
+                  .fpga_mem_c_writedata(fpga_mem_c_writedata), 
+                  .fpga_mem_c_byteenable(fpga_mem_c_byteenable),
+                  .instruction_mem_address(instruction_mem_address),
+                  .instruction_mem_chipselect(instruction_mem_chipselect), 
+                  .instruction_mem_clken(instruction_mem_clken),
+                  .instruction_mem_write(instruction_mem_write),
+                  .instruction_mem_readdata(instruction_mem_readdata),
+                  .instruction_mem_writedata(instruction_mem_writedata),
+                  .instruction_mem_byteenable(instruction_mem_byteenable));
+                  
+
+
 endmodule
 
   
