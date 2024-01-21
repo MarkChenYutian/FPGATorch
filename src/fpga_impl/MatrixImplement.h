@@ -12,12 +12,20 @@
 #include <random>
 
 #include "../MatrixInterface.h"
+#include "FPGAInterface.h"
 
 #ifdef DEBUG
 #define DBG_ASSERT(arg) assert(arg);
 #else
 #define DBG_ASSERT(arg) (void)0;
 #endif
+
+// This is the maximum amount we can handle
+constexpr size_t FPGA_MAX_SIZE = 128 * 128;
+
+// This is the minimum amount we should use FPGA since the communication overhead is too high
+// TODO: This value need further tuning
+constexpr size_t FPGA_MIN_SIZE = 128; 
 
 
 SmartTensor MatNew(int dim0, int dim1, int dim2) {
@@ -69,44 +77,121 @@ void  Set(const SmartTensor& A, int dim0, int dim1, int dim2, float value) {
 
 SmartTensor MatAdd(const SmartTensor& A, const SmartTensor& B) {
     SmartTensor result = MatNLike(A, 0.f);
-    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
-        result->data[i] = (A->data[i]) + (B->data[i]);
+    size_t size = A->size[0] * A->size[1] * A->size[2];
+
+    float *A_data_ptr = &(A->data[0]);
+    float *B_data_ptr = &(B->data[0]);
+    float *R_data_ptr = &(result->data[0]);
+
+    size_t offset = 0;
+    for (; (offset + FPGA_MAX_SIZE) < size; offset += FPGA_MAX_SIZE) {
+        MatAdd128x128(A_data_ptr+offset, B_data_ptr+offset, R_data_ptr+offset, FPGA_MAX_SIZE);
+    }
+
+    size_t remain = size - offset;
+    if (remain >= FPGA_MIN_SIZE) {
+        MatAdd128x128(A_data_ptr+offset, B_data_ptr+offset, R_data_ptr+offset, remain);
+    } else {
+        for (; offset < size; offset ++) {
+            R_data_ptr[offset] = A_data_ptr[offset] + B_data_ptr[offset];
+        }
     }
     return result;
 }
 
 SmartTensor ScalarMatMul(const SmartTensor& A, float scalar) {
     SmartTensor result = MatNLike(A, 0.f);
-    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
-        result->data[i] = (A->data[i]) * scalar;
+    size_t size = A->size[0] * A->size[1] * A->size[2];
+
+    float *A_data_ptr = &(A->data[0]);
+    float *R_data_ptr = &(result->data[0]);
+
+    size_t offset = 0;
+    for (; (offset + FPGA_MAX_SIZE) < size; offset += FPGA_MAX_SIZE) {
+        MatScalarMul128x128(A_data_ptr+offset, scalar, R_data_ptr+offset, FPGA_MAX_SIZE);
+    }
+
+    size_t remain = size - offset;
+    if (remain >= FPGA_MIN_SIZE) {
+        MatScalarMul128x128(A_data_ptr+offset, scalar, R_data_ptr+offset, remain);
+    } else {
+        for (; offset < size; offset ++) {
+            R_data_ptr[offset] = A_data_ptr[offset] * scalar;
+        }
     }
     return result;
 }
 
 SmartTensor ScalarMatDiv(const SmartTensor& A, float scalar) {
     SmartTensor result = MatNLike(A, 0.f);
-    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
-        result->data[i] = (A->data[i]) / scalar;
+    size_t size = A->size[0] * A->size[1] * A->size[2];
+
+    float *A_data_ptr = &(A->data[0]);
+    float *R_data_ptr = &(result->data[0]);
+
+    size_t offset = 0;
+    for (; (offset + FPGA_MAX_SIZE) < size; offset += FPGA_MAX_SIZE) {
+        MatScalarDiv128x128(A_data_ptr+offset, scalar, R_data_ptr+offset, FPGA_MAX_SIZE);
+    }
+    
+    size_t remain = size - offset;
+    if (remain >= FPGA_MIN_SIZE) {
+        MatScalarDiv128x128(A_data_ptr+offset, scalar, R_data_ptr+offset, remain);
+    } else {
+        for (; offset < size; offset ++) {
+            R_data_ptr[offset] = A_data_ptr[offset] / scalar;
+        }
     }
     return result;
 }
 
 SmartTensor ScalarMatAdd(const SmartTensor& A, float scalar) {
     SmartTensor result = MatNLike(A, 0.f);
-    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
-        result->data[i] = A->data[i] + scalar;
+    size_t size = A->size[0] * A->size[1] * A->size[2];
+
+    float *A_data_ptr = &(A->data[0]);
+    float *R_data_ptr = &(result->data[0]);
+
+    size_t offset = 0;
+    for (; (offset + FPGA_MAX_SIZE) < size; offset += FPGA_MAX_SIZE) {
+        MatScalarAdd128x128(A_data_ptr+offset, scalar, R_data_ptr+offset, FPGA_MAX_SIZE);
+    }
+
+    size_t remain = size - offset;
+    if (remain >= FPGA_MIN_SIZE) {
+        MatScalarAdd128x128(A_data_ptr+offset, scalar, R_data_ptr+offset, remain);
+    } else {
+        for (; offset < size; offset ++) {
+            R_data_ptr[offset] = A_data_ptr[offset] + scalar;
+        }
     }
     return result;
 }
 
 SmartTensor ScalarMatInv(const SmartTensor& A) {
     SmartTensor result = MatNLike(A, 0.f);
-    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
-        result->data[i] = 1/(A->data[i]);
+    size_t size = A->size[0] * A->size[1] * A->size[2];
+
+    float *A_data_ptr = &(A->data[0]);
+    float *R_data_ptr = &(result->data[0]);
+
+    size_t offset = 0;
+    for (; (offset + FPGA_MAX_SIZE) < size; offset += FPGA_MAX_SIZE) {
+        MatScalarInv128x128(A_data_ptr+offset, R_data_ptr+offset, FPGA_MAX_SIZE);
+    }
+
+    size_t remain = size - offset;
+    if (remain >= FPGA_MIN_SIZE) {
+        MatScalarInv128x128(A_data_ptr+offset, R_data_ptr+offset, remain);
+    } else {
+        for (; offset < size; offset ++) {
+            R_data_ptr[offset] = 1 / A_data_ptr[offset];
+        }
     }
     return result;
 }
 
+// Sorry, no efficient FPGA implementation here
 SmartTensor ScalarMatExp(const SmartTensor& A) {
     SmartTensor result = MatNLike(A, 0.f);
     for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
@@ -115,6 +200,7 @@ SmartTensor ScalarMatExp(const SmartTensor& A) {
     return result;
 }
 
+// Sorry, no efficient FPGA implementation here
 SmartTensor ScalarMatLog(const SmartTensor& A) {
     SmartTensor result = MatNLike(A, 0.f);
     for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
@@ -146,10 +232,6 @@ SmartTensor MatMul(const SmartTensor& A, const SmartTensor& B) {
     return C;
 }
 
-SmartTensor MatMul(const SmartTensor& A, const SmartTensor& B) {
-    SmartTensor C = MatNew(A->size[0], A->size[1], B->size[2]);
-    return C;
-}
 
 SmartTensor MatTrans(const SmartTensor& A) {
     SmartTensor B = MatNew(A->size[0], A->size[2], A->size[1]);
@@ -279,9 +361,26 @@ SmartTensor ScalarGetGTMask(const SmartTensor& A, float scalar) {
 
 SmartTensor MatElementwiseMul(const SmartTensor &A, const SmartTensor &B) {
     SmartTensor result = MatNLike(A, 0.f);
-    for (int i = 0; i < A->size[0] * A->size[1] * A->size[2]; i ++) {
-        result->data[i] = A->data[i] * B->data[i];
+    size_t size = A->size[0] * A->size[1] * A->size[2];
+
+    float *A_data_ptr = &(A->data[0]);
+    float *B_data_ptr = &(B->data[0]);
+    float *R_data_ptr = &(result->data[0]);
+
+    size_t offset = 0;
+    for (; (offset + FPGA_MAX_SIZE) < size; offset += FPGA_MAX_SIZE) {
+        MatElementwiseMul128x128(A_data_ptr+offset, B_data_ptr+offset, R_data_ptr+offset, FPGA_MAX_SIZE);
     }
+
+    size_t remain = size - offset;
+    if (remain >= FPGA_MIN_SIZE) {
+        MatElementwiseMul128x128(A_data_ptr+offset, B_data_ptr+offset, R_data_ptr+offset, remain);
+    } else {
+        for (; offset < size; offset ++) {
+            R_data_ptr[offset] = A_data_ptr[offset] * B_data_ptr[offset];
+        }
+    }
+
     return result;
 }
 
