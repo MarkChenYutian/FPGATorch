@@ -1009,6 +1009,9 @@ set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_global_assignment -name VERILOG_FILE ../Quartus_FP_IP/div_FP/div_cycle_6_area/div_cycle_6_area.v
+set_global_assignment -name SYSTEMVERILOG_FILE SystolicArray.sv
+set_global_assignment -name SYSTEMVERILOG_FILE MatMul_large.sv
 set_global_assignment -name SYSTEMVERILOG_FILE basic_func.sv
 set_global_assignment -name SOURCE_FILE Macro.svh
 set_global_assignment -name SYSTEMVERILOG_FILE library.sv

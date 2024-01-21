@@ -11,9 +11,9 @@
 
 `define BANDWIDTH 8
 
-`define SINGLE_ACCESS 8
+`define SINGLE_ACCESS 1
 
-`define CYCLE_WIDTH 3
+`define CYCLE_WIDTH 4
 `define CYCLE_MUL 5
 `define CYCLE_DIV 6
 `define CYCLE_ADD 7
@@ -28,8 +28,7 @@ typedef enum logic [`OP_WIDTH-1:0] {
   MAT_SCAL_ADD = 4'd4,
   MAT_SCAL_INV = 4'd5,
   MAT_MUL = 4'd6,
-  MAT_TRAS = 4'd7,
-  REDUCE_SUM = 4'd8
+  MAT_ELE_MUL = 4'd7
 } op_code_t;
 
 typedef struct packed {

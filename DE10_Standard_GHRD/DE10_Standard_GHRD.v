@@ -254,7 +254,7 @@ module DE10_Standard_GHRD(
   wire [31:0]  instruction_mem_writedata;             //                            .writedata
   wire [3:0]   instruction_mem_byteenable;            //                            .byteenable
 // connection of internal logics
-  assign LEDR[9:1] = fpga_led_internal;
+  // assign LEDR[9:1] = fpga_led_internal;
   assign stm_hw_events    = {{4{1'b0}}, SW, fpga_led_internal, fpga_debounced_buttons};
   assign fpga_clk_50=CLOCK_50;
 //=======================================================
@@ -384,12 +384,17 @@ soc_system u0 (
         .fpga_mem_c_writedata                  (fpga_mem_c_writedata),                  //                            .writedata
         .fpga_mem_c_byteenable                 (fpga_mem_c_byteenable),                 //                            .byteenable
 		  .instruction_mem_address               (instruction_mem_address),               //             instruction_mem.address
+      // .instruction_mem_address               (0),               //             instruction_mem.address
         .instruction_mem_chipselect            (instruction_mem_chipselect),            //                            .chipselect
+        // .instruction_mem_chipselect            (1'b1),            //                            .chipselect
         .instruction_mem_clken                 (instruction_mem_clken),                 //                            .clken
+        // .instruction_mem_clken                 (1'b1),                 //                            .clken
         .instruction_mem_write                 (instruction_mem_write),                 //                            .write
+        // .instruction_mem_write                 (1'b1),                 //                            .write
         .instruction_mem_readdata              (instruction_mem_readdata),              //                            .readdata
-        .instruction_mem_writedata             (instruction_mem_writedata),             //                            .writedata
+        // .instruction_mem_writedata             (32'hFFFF_FFFF),             //                            .writedata
         .instruction_mem_byteenable            (instruction_mem_byteenable)             //                            .byteenable
+        // .instruction_mem_byteenable            (4'hF)             //                            .byteenable
     );
 
 	 
@@ -460,10 +465,10 @@ else
                 counter<=counter+1'b1;
 end
 
-assign LEDR[0]=led_level;
+// assign LEDR[0]=led_level;
 
 MatMem_unpack RTL(.clock(fpga_clk_50),
-                  .reset(~reset_n),
+                  .reset(~hps_fpga_reset_n),
                   .fpga_mem_a_address(fpga_mem_a_address),
                   .fpga_mem_a_chipselect(fpga_mem_a_chipselect),
                   .fpga_mem_a_clken(fpga_mem_a_clken),
@@ -486,14 +491,15 @@ MatMem_unpack RTL(.clock(fpga_clk_50),
                   .fpga_mem_c_writedata(fpga_mem_c_writedata), 
                   .fpga_mem_c_byteenable(fpga_mem_c_byteenable),
                   .instruction_mem_address(instruction_mem_address),
-                  .instruction_mem_chipselect(instruction_mem_chipselect), 
+                  .instruction_mem_chipselect(instruction_mem_chipselect),
                   .instruction_mem_clken(instruction_mem_clken),
                   .instruction_mem_write(instruction_mem_write),
                   .instruction_mem_readdata(instruction_mem_readdata),
                   .instruction_mem_writedata(instruction_mem_writedata),
-                  .instruction_mem_byteenable(instruction_mem_byteenable));
-                  
-
+                  .instruction_mem_byteenable(instruction_mem_byteenable),
+                  .op_code_debug(),
+                  .readdataA_debug());
+assign LEDR[9:0] = instruction_mem_readdata[31:22];
 
 endmodule
 
