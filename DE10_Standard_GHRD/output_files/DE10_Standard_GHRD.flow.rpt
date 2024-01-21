@@ -1,5 +1,5 @@
 Flow report for DE10_Standard_GHRD
-Sat Jan 20 21:15:20 2024
+Sun Jan 21 02:18:34 2024
 Quartus Prime Version 16.1.2 Build 203 01/18/2017 SJ Standard Edition
 
 
@@ -41,15 +41,15 @@ agreement for further details.
 +-----------------------------------------------------------------------------------+
 ; Flow Summary                                                                      ;
 +---------------------------------+-------------------------------------------------+
-; Flow Status                     ; Successful - Sat Jan 20 21:14:47 2024           ;
+; Flow Status                     ; Successful - Sun Jan 21 02:17:44 2024           ;
 ; Quartus Prime Version           ; 16.1.2 Build 203 01/18/2017 SJ Standard Edition ;
 ; Revision Name                   ; DE10_Standard_GHRD                              ;
 ; Top-level Entity Name           ; DE10_Standard_GHRD                              ;
 ; Family                          ; Cyclone V                                       ;
 ; Device                          ; 5CSXFC6D6F31C6                                  ;
 ; Timing Models                   ; Final                                           ;
-; Logic utilization (in ALMs)     ; 1,522 / 41,910 ( 4 % )                          ;
-; Total registers                 ; 2671                                            ;
+; Logic utilization (in ALMs)     ; 1,563 / 41,910 ( 4 % )                          ;
+; Total registers                 ; 2680                                            ;
 ; Total pins                      ; 338 / 499 ( 68 % )                              ;
 ; Total virtual pins              ; 0                                               ;
 ; Total block memory bits         ; 1,605,632 / 5,662,720 ( 28 % )                  ;
@@ -68,7 +68,7 @@ agreement for further details.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 01/20/2024 21:10:27 ;
+; Start date & time ; 01/21/2024 02:11:49 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; DE10_Standard_GHRD  ;
 +-------------------+---------------------+
@@ -79,7 +79,7 @@ agreement for further details.
 +---------------------------------------+--------------------------------------------------------------------------+---------------+--------------------------------+------------+
 ; Assignment Name                       ; Value                                                                    ; Default Value ; Entity Name                    ; Section Id ;
 +---------------------------------------+--------------------------------------------------------------------------+---------------+--------------------------------+------------+
-; COMPILER_SIGNATURE_ID                 ; 273659134299272.170580302622655                                          ; --            ; --                             ; --         ;
+; COMPILER_SIGNATURE_ID                 ; 273659134299272.170582110832269                                          ; --            ; --                             ; --         ;
 ; ECO_REGENERATE_REPORT                 ; On                                                                       ; Off           ; --                             ; --         ;
 ; HPS_ISW_FILE                          ; soc_system/synthesis/submodules/sequencer/sdram_io.pre.h                 ; --            ; soc_system_hps_0_hps_io_border ; --         ;
 ; HPS_ISW_FILE                          ; soc_system/synthesis/submodules/sequencer/alt_types.pre.h                ; --            ; soc_system_hps_0_hps_io_border ; --         ;
@@ -134,11 +134,11 @@ agreement for further details.
 +---------------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name               ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +---------------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis      ; 00:00:27     ; 1.0                     ; 1551 MB             ; 00:00:44                           ;
-; Fitter                    ; 00:01:09     ; 1.5                     ; 3387 MB             ; 00:05:13                           ;
-; Assembler                 ; 00:00:10     ; 1.0                     ; 1179 MB             ; 00:00:10                           ;
-; TimeQuest Timing Analyzer ; 00:00:31     ; 1.6                     ; 1987 MB             ; 00:00:37                           ;
-; Total                     ; 00:02:17     ; --                      ; --                  ; 00:06:44                           ;
+; Analysis & Synthesis      ; 00:01:39     ; 2.2                     ; 2017 MB             ; 00:03:11                           ;
+; Fitter                    ; 00:01:18     ; 1.4                     ; 3410 MB             ; 00:05:19                           ;
+; Assembler                 ; 00:00:12     ; 1.0                     ; 1203 MB             ; 00:00:08                           ;
+; TimeQuest Timing Analyzer ; 00:00:49     ; 1.4                     ; 2013 MB             ; 00:00:35                           ;
+; Total                     ; 00:03:58     ; --                      ; --                  ; 00:09:13                           ;
 +---------------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 

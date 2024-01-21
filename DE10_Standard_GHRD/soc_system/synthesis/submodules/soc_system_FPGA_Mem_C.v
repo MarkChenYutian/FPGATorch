@@ -84,7 +84,7 @@ wire             wren2;
       .address_b (address2),
       .addressstall_a (not_clken),
       .addressstall_b (not_clken2),
-      .byteena_a (15'hFFFF),
+      .byteena_a (16'hFFFF),
       .byteena_b (32'hFFFF_FFFF),
       .clock0 (clk),
       .clocken0 (clocken0),
