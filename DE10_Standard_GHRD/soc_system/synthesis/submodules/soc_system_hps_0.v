@@ -7,8 +7,8 @@
 
 `timescale 1 ps / 1 ps
 module soc_system_hps_0 #(
-		parameter F2S_Width = 2,
-		parameter S2F_Width = 2
+		parameter F2S_Width = 3,
+		parameter S2F_Width = 3
 	) (
 		output wire         h2f_rst_n,                //           h2f_reset.reset_n
 		input  wire         f2h_cold_rst_req_n,       //  f2h_cold_reset_req.reset_n
@@ -28,8 +28,8 @@ module soc_system_hps_0 #(
 		output wire         f2h_AWREADY,              //                    .awready
 		input  wire [4:0]   f2h_AWUSER,               //                    .awuser
 		input  wire [7:0]   f2h_WID,                  //                    .wid
-		input  wire [63:0]  f2h_WDATA,                //                    .wdata
-		input  wire [7:0]   f2h_WSTRB,                //                    .wstrb
+		input  wire [127:0] f2h_WDATA,                //                    .wdata
+		input  wire [15:0]  f2h_WSTRB,                //                    .wstrb
 		input  wire         f2h_WLAST,                //                    .wlast
 		input  wire         f2h_WVALID,               //                    .wvalid
 		output wire         f2h_WREADY,               //                    .wready
@@ -49,7 +49,7 @@ module soc_system_hps_0 #(
 		output wire         f2h_ARREADY,              //                    .arready
 		input  wire [4:0]   f2h_ARUSER,               //                    .aruser
 		output wire [7:0]   f2h_RID,                  //                    .rid
-		output wire [63:0]  f2h_RDATA,                //                    .rdata
+		output wire [127:0] f2h_RDATA,                //                    .rdata
 		output wire [1:0]   f2h_RRESP,                //                    .rresp
 		output wire         f2h_RLAST,                //                    .rlast
 		output wire         f2h_RVALID,               //                    .rvalid
@@ -103,8 +103,8 @@ module soc_system_hps_0 #(
 		output wire         h2f_AWVALID,              //                    .awvalid
 		input  wire         h2f_AWREADY,              //                    .awready
 		output wire [11:0]  h2f_WID,                  //                    .wid
-		output wire [63:0]  h2f_WDATA,                //                    .wdata
-		output wire [7:0]   h2f_WSTRB,                //                    .wstrb
+		output wire [127:0] h2f_WDATA,                //                    .wdata
+		output wire [15:0]  h2f_WSTRB,                //                    .wstrb
 		output wire         h2f_WLAST,                //                    .wlast
 		output wire         h2f_WVALID,               //                    .wvalid
 		input  wire         h2f_WREADY,               //                    .wready
@@ -123,7 +123,7 @@ module soc_system_hps_0 #(
 		output wire         h2f_ARVALID,              //                    .arvalid
 		input  wire         h2f_ARREADY,              //                    .arready
 		input  wire [11:0]  h2f_RID,                  //                    .rid
-		input  wire [63:0]  h2f_RDATA,                //                    .rdata
+		input  wire [127:0] h2f_RDATA,                //                    .rdata
 		input  wire [1:0]   h2f_RRESP,                //                    .rresp
 		input  wire         h2f_RLAST,                //                    .rlast
 		input  wire         h2f_RVALID,               //                    .rvalid
@@ -226,7 +226,7 @@ module soc_system_hps_0 #(
 		// has been instantiated this module with a set of parameters different
 		// from those it was generated for.  This will usually result in a
 		// non-functioning system.
-		if (F2S_Width != 2)
+		if (F2S_Width != 3)
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");
@@ -235,7 +235,7 @@ module soc_system_hps_0 #(
 			instantiated_with_wrong_parameters_error_see_comment_above
 					f2s_width_check ( .error(1'b1) );
 		end
-		if (S2F_Width != 2)
+		if (S2F_Width != 3)
 		begin
 			initial begin
 				$display("Generated module instantiated with wrong parameters");

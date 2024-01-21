@@ -1,13 +1,27 @@
 	component soc_system is
 		port (
 			clk_clk                               : in    std_logic                      := 'X';             -- clk
-			fpga_mem_address                      : in    std_logic_vector(13 downto 0)  := (others => 'X'); -- address
-			fpga_mem_chipselect                   : in    std_logic                      := 'X';             -- chipselect
-			fpga_mem_clken                        : in    std_logic                      := 'X';             -- clken
-			fpga_mem_write                        : in    std_logic                      := 'X';             -- write
-			fpga_mem_readdata                     : out   std_logic_vector(127 downto 0);                    -- readdata
-			fpga_mem_writedata                    : in    std_logic_vector(127 downto 0) := (others => 'X'); -- writedata
-			fpga_mem_byteenable                   : in    std_logic_vector(15 downto 0)  := (others => 'X'); -- byteenable
+			fpga_mem_a_address                    : in    std_logic_vector(10 downto 0)  := (others => 'X'); -- address
+			fpga_mem_a_chipselect                 : in    std_logic                      := 'X';             -- chipselect
+			fpga_mem_a_clken                      : in    std_logic                      := 'X';             -- clken
+			fpga_mem_a_write                      : in    std_logic                      := 'X';             -- write
+			fpga_mem_a_readdata                   : out   std_logic_vector(255 downto 0);                    -- readdata
+			fpga_mem_a_writedata                  : in    std_logic_vector(255 downto 0) := (others => 'X'); -- writedata
+			fpga_mem_a_byteenable                 : in    std_logic_vector(31 downto 0)  := (others => 'X'); -- byteenable
+			fpga_mem_b_address                    : in    std_logic_vector(10 downto 0)  := (others => 'X'); -- address
+			fpga_mem_b_chipselect                 : in    std_logic                      := 'X';             -- chipselect
+			fpga_mem_b_clken                      : in    std_logic                      := 'X';             -- clken
+			fpga_mem_b_write                      : in    std_logic                      := 'X';             -- write
+			fpga_mem_b_readdata                   : out   std_logic_vector(255 downto 0);                    -- readdata
+			fpga_mem_b_writedata                  : in    std_logic_vector(255 downto 0) := (others => 'X'); -- writedata
+			fpga_mem_b_byteenable                 : in    std_logic_vector(31 downto 0)  := (others => 'X'); -- byteenable
+			fpga_mem_c_address                    : in    std_logic_vector(10 downto 0)  := (others => 'X'); -- address
+			fpga_mem_c_chipselect                 : in    std_logic                      := 'X';             -- chipselect
+			fpga_mem_c_clken                      : in    std_logic                      := 'X';             -- clken
+			fpga_mem_c_write                      : in    std_logic                      := 'X';             -- write
+			fpga_mem_c_readdata                   : out   std_logic_vector(255 downto 0);                    -- readdata
+			fpga_mem_c_writedata                  : in    std_logic_vector(255 downto 0) := (others => 'X'); -- writedata
+			fpga_mem_c_byteenable                 : in    std_logic_vector(31 downto 0)  := (others => 'X'); -- byteenable
 			hps_0_f2h_cold_reset_req_reset_n      : in    std_logic                      := 'X';             -- reset_n
 			hps_0_f2h_debug_reset_req_reset_n     : in    std_logic                      := 'X';             -- reset_n
 			hps_0_f2h_stm_hw_events_stm_hwevents  : in    std_logic_vector(27 downto 0)  := (others => 'X'); -- stm_hwevents
@@ -106,13 +120,27 @@
 	u0 : component soc_system
 		port map (
 			clk_clk                               => CONNECTED_TO_clk_clk,                               --                         clk.clk
-			fpga_mem_address                      => CONNECTED_TO_fpga_mem_address,                      --                    fpga_mem.address
-			fpga_mem_chipselect                   => CONNECTED_TO_fpga_mem_chipselect,                   --                            .chipselect
-			fpga_mem_clken                        => CONNECTED_TO_fpga_mem_clken,                        --                            .clken
-			fpga_mem_write                        => CONNECTED_TO_fpga_mem_write,                        --                            .write
-			fpga_mem_readdata                     => CONNECTED_TO_fpga_mem_readdata,                     --                            .readdata
-			fpga_mem_writedata                    => CONNECTED_TO_fpga_mem_writedata,                    --                            .writedata
-			fpga_mem_byteenable                   => CONNECTED_TO_fpga_mem_byteenable,                   --                            .byteenable
+			fpga_mem_a_address                    => CONNECTED_TO_fpga_mem_a_address,                    --                  fpga_mem_a.address
+			fpga_mem_a_chipselect                 => CONNECTED_TO_fpga_mem_a_chipselect,                 --                            .chipselect
+			fpga_mem_a_clken                      => CONNECTED_TO_fpga_mem_a_clken,                      --                            .clken
+			fpga_mem_a_write                      => CONNECTED_TO_fpga_mem_a_write,                      --                            .write
+			fpga_mem_a_readdata                   => CONNECTED_TO_fpga_mem_a_readdata,                   --                            .readdata
+			fpga_mem_a_writedata                  => CONNECTED_TO_fpga_mem_a_writedata,                  --                            .writedata
+			fpga_mem_a_byteenable                 => CONNECTED_TO_fpga_mem_a_byteenable,                 --                            .byteenable
+			fpga_mem_b_address                    => CONNECTED_TO_fpga_mem_b_address,                    --                  fpga_mem_b.address
+			fpga_mem_b_chipselect                 => CONNECTED_TO_fpga_mem_b_chipselect,                 --                            .chipselect
+			fpga_mem_b_clken                      => CONNECTED_TO_fpga_mem_b_clken,                      --                            .clken
+			fpga_mem_b_write                      => CONNECTED_TO_fpga_mem_b_write,                      --                            .write
+			fpga_mem_b_readdata                   => CONNECTED_TO_fpga_mem_b_readdata,                   --                            .readdata
+			fpga_mem_b_writedata                  => CONNECTED_TO_fpga_mem_b_writedata,                  --                            .writedata
+			fpga_mem_b_byteenable                 => CONNECTED_TO_fpga_mem_b_byteenable,                 --                            .byteenable
+			fpga_mem_c_address                    => CONNECTED_TO_fpga_mem_c_address,                    --                  fpga_mem_c.address
+			fpga_mem_c_chipselect                 => CONNECTED_TO_fpga_mem_c_chipselect,                 --                            .chipselect
+			fpga_mem_c_clken                      => CONNECTED_TO_fpga_mem_c_clken,                      --                            .clken
+			fpga_mem_c_write                      => CONNECTED_TO_fpga_mem_c_write,                      --                            .write
+			fpga_mem_c_readdata                   => CONNECTED_TO_fpga_mem_c_readdata,                   --                            .readdata
+			fpga_mem_c_writedata                  => CONNECTED_TO_fpga_mem_c_writedata,                  --                            .writedata
+			fpga_mem_c_byteenable                 => CONNECTED_TO_fpga_mem_c_byteenable,                 --                            .byteenable
 			hps_0_f2h_cold_reset_req_reset_n      => CONNECTED_TO_hps_0_f2h_cold_reset_req_reset_n,      --    hps_0_f2h_cold_reset_req.reset_n
 			hps_0_f2h_debug_reset_req_reset_n     => CONNECTED_TO_hps_0_f2h_debug_reset_req_reset_n,     --   hps_0_f2h_debug_reset_req.reset_n
 			hps_0_f2h_stm_hw_events_stm_hwevents  => CONNECTED_TO_hps_0_f2h_stm_hw_events_stm_hwevents,  --     hps_0_f2h_stm_hw_events.stm_hwevents

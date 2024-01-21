@@ -57,7 +57,6 @@ int main() {
 		return( 1 );
 	}
 
-
 	h2p_lw_led_addr = instruction_base + ( ( unsigned long )( ALT_LWFPGASLVS_OFST + LED_PIO_BASE ) & ( unsigned long)( HW_REGS_MASK ) );
 
 	// toggle the LEDs a bit
@@ -85,7 +84,6 @@ int main() {
 				loop_count++;
 			}
 		}
-		
 	} // while
 	
 
@@ -98,6 +96,5 @@ int main() {
 	}
 
 	close( fd );
-
 	return( 0 );
 }

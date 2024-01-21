@@ -1,13 +1,27 @@
 
 module soc_system (
 	clk_clk,
-	fpga_mem_address,
-	fpga_mem_chipselect,
-	fpga_mem_clken,
-	fpga_mem_write,
-	fpga_mem_readdata,
-	fpga_mem_writedata,
-	fpga_mem_byteenable,
+	fpga_mem_a_address,
+	fpga_mem_a_chipselect,
+	fpga_mem_a_clken,
+	fpga_mem_a_write,
+	fpga_mem_a_readdata,
+	fpga_mem_a_writedata,
+	fpga_mem_a_byteenable,
+	fpga_mem_b_address,
+	fpga_mem_b_chipselect,
+	fpga_mem_b_clken,
+	fpga_mem_b_write,
+	fpga_mem_b_readdata,
+	fpga_mem_b_writedata,
+	fpga_mem_b_byteenable,
+	fpga_mem_c_address,
+	fpga_mem_c_chipselect,
+	fpga_mem_c_clken,
+	fpga_mem_c_write,
+	fpga_mem_c_readdata,
+	fpga_mem_c_writedata,
+	fpga_mem_c_byteenable,
 	hps_0_f2h_cold_reset_req_reset_n,
 	hps_0_f2h_debug_reset_req_reset_n,
 	hps_0_f2h_stm_hw_events_stm_hwevents,
@@ -102,13 +116,27 @@ module soc_system (
 	reset_reset_n);	
 
 	input		clk_clk;
-	input	[13:0]	fpga_mem_address;
-	input		fpga_mem_chipselect;
-	input		fpga_mem_clken;
-	input		fpga_mem_write;
-	output	[127:0]	fpga_mem_readdata;
-	input	[127:0]	fpga_mem_writedata;
-	input	[15:0]	fpga_mem_byteenable;
+	input	[10:0]	fpga_mem_a_address;
+	input		fpga_mem_a_chipselect;
+	input		fpga_mem_a_clken;
+	input		fpga_mem_a_write;
+	output	[255:0]	fpga_mem_a_readdata;
+	input	[255:0]	fpga_mem_a_writedata;
+	input	[31:0]	fpga_mem_a_byteenable;
+	input	[10:0]	fpga_mem_b_address;
+	input		fpga_mem_b_chipselect;
+	input		fpga_mem_b_clken;
+	input		fpga_mem_b_write;
+	output	[255:0]	fpga_mem_b_readdata;
+	input	[255:0]	fpga_mem_b_writedata;
+	input	[31:0]	fpga_mem_b_byteenable;
+	input	[10:0]	fpga_mem_c_address;
+	input		fpga_mem_c_chipselect;
+	input		fpga_mem_c_clken;
+	input		fpga_mem_c_write;
+	output	[255:0]	fpga_mem_c_readdata;
+	input	[255:0]	fpga_mem_c_writedata;
+	input	[31:0]	fpga_mem_c_byteenable;
 	input		hps_0_f2h_cold_reset_req_reset_n;
 	input		hps_0_f2h_debug_reset_req_reset_n;
 	input	[27:0]	hps_0_f2h_stm_hw_events_stm_hwevents;

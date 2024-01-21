@@ -1,5 +1,5 @@
 Assembler report for DE10_Standard_GHRD
-Fri Jan 19 20:58:32 2024
+Sat Jan 20 21:14:47 2024
 Quartus Prime Version 16.1.2 Build 203 01/18/2017 SJ Standard Edition
 
 
@@ -39,7 +39,7 @@ agreement for further details.
 +---------------------------------------------------------------+
 ; Assembler Summary                                             ;
 +-----------------------+---------------------------------------+
-; Assembler Status      ; Successful - Fri Jan 19 20:58:32 2024 ;
+; Assembler Status      ; Successful - Sat Jan 20 21:14:47 2024 ;
 ; Revision Name         ; DE10_Standard_GHRD                    ;
 ; Top-level Entity Name ; DE10_Standard_GHRD                    ;
 ; Family                ; Cyclone V                             ;
@@ -79,8 +79,8 @@ agreement for further details.
 ; Option         ; Setting                         ;
 +----------------+---------------------------------+
 ; Device         ; 5CSXFC6D6F31C6                  ;
-; JTAG usercode  ; 0x04BFCA51                      ;
-; Checksum       ; 0x04BFCA51                      ;
+; JTAG usercode  ; 0x04D1A71E                      ;
+; Checksum       ; 0x04D1A71E                      ;
 +----------------+---------------------------------+
 
 
@@ -90,15 +90,15 @@ agreement for further details.
 Info: *******************************************************************
 Info: Running Quartus Prime Assembler
     Info: Version 16.1.2 Build 203 01/18/2017 SJ Standard Edition
-    Info: Processing started: Fri Jan 19 20:58:22 2024
+    Info: Processing started: Sat Jan 20 21:14:37 2024
 Info: Command: quartus_asm --read_settings_files=off --write_settings_files=off DE10_Standard_GHRD -c DE10_Standard_GHRD
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (115030): Assembler is generating device programming files
 Info (11878): Hard Processor Subsystem configuration has not changed and a Preloader software update is not required
 Info: Quartus Prime Assembler was successful. 0 errors, 1 warning
-    Info: Peak virtual memory: 1151 megabytes
-    Info: Processing ended: Fri Jan 19 20:58:33 2024
-    Info: Elapsed time: 00:00:11
-    Info: Total CPU time (on all processors): 00:00:09
+    Info: Peak virtual memory: 1179 megabytes
+    Info: Processing ended: Sat Jan 20 21:14:47 2024
+    Info: Elapsed time: 00:00:10
+    Info: Total CPU time (on all processors): 00:00:10
 
 

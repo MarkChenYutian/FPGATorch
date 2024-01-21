@@ -5,13 +5,27 @@
 `timescale 1 ps / 1 ps
 module soc_system (
 		input  wire         clk_clk,                               //                         clk.clk
-		input  wire [13:0]  fpga_mem_address,                      //                    fpga_mem.address
-		input  wire         fpga_mem_chipselect,                   //                            .chipselect
-		input  wire         fpga_mem_clken,                        //                            .clken
-		input  wire         fpga_mem_write,                        //                            .write
-		output wire [127:0] fpga_mem_readdata,                     //                            .readdata
-		input  wire [127:0] fpga_mem_writedata,                    //                            .writedata
-		input  wire [15:0]  fpga_mem_byteenable,                   //                            .byteenable
+		input  wire [10:0]  fpga_mem_a_address,                    //                  fpga_mem_a.address
+		input  wire         fpga_mem_a_chipselect,                 //                            .chipselect
+		input  wire         fpga_mem_a_clken,                      //                            .clken
+		input  wire         fpga_mem_a_write,                      //                            .write
+		output wire [255:0] fpga_mem_a_readdata,                   //                            .readdata
+		input  wire [255:0] fpga_mem_a_writedata,                  //                            .writedata
+		input  wire [31:0]  fpga_mem_a_byteenable,                 //                            .byteenable
+		input  wire [10:0]  fpga_mem_b_address,                    //                  fpga_mem_b.address
+		input  wire         fpga_mem_b_chipselect,                 //                            .chipselect
+		input  wire         fpga_mem_b_clken,                      //                            .clken
+		input  wire         fpga_mem_b_write,                      //                            .write
+		output wire [255:0] fpga_mem_b_readdata,                   //                            .readdata
+		input  wire [255:0] fpga_mem_b_writedata,                  //                            .writedata
+		input  wire [31:0]  fpga_mem_b_byteenable,                 //                            .byteenable
+		input  wire [10:0]  fpga_mem_c_address,                    //                  fpga_mem_c.address
+		input  wire         fpga_mem_c_chipselect,                 //                            .chipselect
+		input  wire         fpga_mem_c_clken,                      //                            .clken
+		input  wire         fpga_mem_c_write,                      //                            .write
+		output wire [255:0] fpga_mem_c_readdata,                   //                            .readdata
+		input  wire [255:0] fpga_mem_c_writedata,                  //                            .writedata
+		input  wire [31:0]  fpga_mem_c_byteenable,                 //                            .byteenable
 		input  wire         hps_0_f2h_cold_reset_req_reset_n,      //    hps_0_f2h_cold_reset_req.reset_n
 		input  wire         hps_0_f2h_debug_reset_req_reset_n,     //   hps_0_f2h_debug_reset_req.reset_n
 		input  wire [27:0]  hps_0_f2h_stm_hw_events_stm_hwevents,  //     hps_0_f2h_stm_hw_events.stm_hwevents
@@ -108,7 +122,7 @@ module soc_system (
 
 	wire    [1:0] hps_0_h2f_axi_master_awburst;                    // hps_0:h2f_AWBURST -> mm_interconnect_0:hps_0_h2f_axi_master_awburst
 	wire    [3:0] hps_0_h2f_axi_master_arlen;                      // hps_0:h2f_ARLEN -> mm_interconnect_0:hps_0_h2f_axi_master_arlen
-	wire    [7:0] hps_0_h2f_axi_master_wstrb;                      // hps_0:h2f_WSTRB -> mm_interconnect_0:hps_0_h2f_axi_master_wstrb
+	wire   [15:0] hps_0_h2f_axi_master_wstrb;                      // hps_0:h2f_WSTRB -> mm_interconnect_0:hps_0_h2f_axi_master_wstrb
 	wire          hps_0_h2f_axi_master_wready;                     // mm_interconnect_0:hps_0_h2f_axi_master_wready -> hps_0:h2f_WREADY
 	wire   [11:0] hps_0_h2f_axi_master_rid;                        // mm_interconnect_0:hps_0_h2f_axi_master_rid -> hps_0:h2f_RID
 	wire          hps_0_h2f_axi_master_rready;                     // hps_0:h2f_RREADY -> mm_interconnect_0:hps_0_h2f_axi_master_rready
@@ -119,7 +133,7 @@ module soc_system (
 	wire   [29:0] hps_0_h2f_axi_master_araddr;                     // hps_0:h2f_ARADDR -> mm_interconnect_0:hps_0_h2f_axi_master_araddr
 	wire    [2:0] hps_0_h2f_axi_master_arprot;                     // hps_0:h2f_ARPROT -> mm_interconnect_0:hps_0_h2f_axi_master_arprot
 	wire    [2:0] hps_0_h2f_axi_master_awprot;                     // hps_0:h2f_AWPROT -> mm_interconnect_0:hps_0_h2f_axi_master_awprot
-	wire   [63:0] hps_0_h2f_axi_master_wdata;                      // hps_0:h2f_WDATA -> mm_interconnect_0:hps_0_h2f_axi_master_wdata
+	wire  [127:0] hps_0_h2f_axi_master_wdata;                      // hps_0:h2f_WDATA -> mm_interconnect_0:hps_0_h2f_axi_master_wdata
 	wire          hps_0_h2f_axi_master_arvalid;                    // hps_0:h2f_ARVALID -> mm_interconnect_0:hps_0_h2f_axi_master_arvalid
 	wire    [3:0] hps_0_h2f_axi_master_awcache;                    // hps_0:h2f_AWCACHE -> mm_interconnect_0:hps_0_h2f_axi_master_awcache
 	wire   [11:0] hps_0_h2f_axi_master_arid;                       // hps_0:h2f_ARID -> mm_interconnect_0:hps_0_h2f_axi_master_arid
@@ -128,7 +142,7 @@ module soc_system (
 	wire   [29:0] hps_0_h2f_axi_master_awaddr;                     // hps_0:h2f_AWADDR -> mm_interconnect_0:hps_0_h2f_axi_master_awaddr
 	wire    [1:0] hps_0_h2f_axi_master_bresp;                      // mm_interconnect_0:hps_0_h2f_axi_master_bresp -> hps_0:h2f_BRESP
 	wire          hps_0_h2f_axi_master_arready;                    // mm_interconnect_0:hps_0_h2f_axi_master_arready -> hps_0:h2f_ARREADY
-	wire   [63:0] hps_0_h2f_axi_master_rdata;                      // mm_interconnect_0:hps_0_h2f_axi_master_rdata -> hps_0:h2f_RDATA
+	wire  [127:0] hps_0_h2f_axi_master_rdata;                      // mm_interconnect_0:hps_0_h2f_axi_master_rdata -> hps_0:h2f_RDATA
 	wire          hps_0_h2f_axi_master_awready;                    // mm_interconnect_0:hps_0_h2f_axi_master_awready -> hps_0:h2f_AWREADY
 	wire    [1:0] hps_0_h2f_axi_master_arburst;                    // hps_0:h2f_ARBURST -> mm_interconnect_0:hps_0_h2f_axi_master_arburst
 	wire    [2:0] hps_0_h2f_axi_master_arsize;                     // hps_0:h2f_ARSIZE -> mm_interconnect_0:hps_0_h2f_axi_master_arsize
@@ -142,13 +156,27 @@ module soc_system (
 	wire    [2:0] hps_0_h2f_axi_master_awsize;                     // hps_0:h2f_AWSIZE -> mm_interconnect_0:hps_0_h2f_axi_master_awsize
 	wire          hps_0_h2f_axi_master_awvalid;                    // hps_0:h2f_AWVALID -> mm_interconnect_0:hps_0_h2f_axi_master_awvalid
 	wire          hps_0_h2f_axi_master_rvalid;                     // mm_interconnect_0:hps_0_h2f_axi_master_rvalid -> hps_0:h2f_RVALID
-	wire          mm_interconnect_0_fpga_mem_s1_chipselect;        // mm_interconnect_0:FPGA_Mem_s1_chipselect -> FPGA_Mem:chipselect
-	wire  [127:0] mm_interconnect_0_fpga_mem_s1_readdata;          // FPGA_Mem:readdata -> mm_interconnect_0:FPGA_Mem_s1_readdata
-	wire   [13:0] mm_interconnect_0_fpga_mem_s1_address;           // mm_interconnect_0:FPGA_Mem_s1_address -> FPGA_Mem:address
-	wire   [15:0] mm_interconnect_0_fpga_mem_s1_byteenable;        // mm_interconnect_0:FPGA_Mem_s1_byteenable -> FPGA_Mem:byteenable
-	wire          mm_interconnect_0_fpga_mem_s1_write;             // mm_interconnect_0:FPGA_Mem_s1_write -> FPGA_Mem:write
-	wire  [127:0] mm_interconnect_0_fpga_mem_s1_writedata;         // mm_interconnect_0:FPGA_Mem_s1_writedata -> FPGA_Mem:writedata
-	wire          mm_interconnect_0_fpga_mem_s1_clken;             // mm_interconnect_0:FPGA_Mem_s1_clken -> FPGA_Mem:clken
+	wire          mm_interconnect_0_fpga_mem_a_s1_chipselect;      // mm_interconnect_0:FPGA_Mem_A_s1_chipselect -> FPGA_Mem_A:chipselect
+	wire  [127:0] mm_interconnect_0_fpga_mem_a_s1_readdata;        // FPGA_Mem_A:readdata -> mm_interconnect_0:FPGA_Mem_A_s1_readdata
+	wire   [11:0] mm_interconnect_0_fpga_mem_a_s1_address;         // mm_interconnect_0:FPGA_Mem_A_s1_address -> FPGA_Mem_A:address
+	wire   [15:0] mm_interconnect_0_fpga_mem_a_s1_byteenable;      // mm_interconnect_0:FPGA_Mem_A_s1_byteenable -> FPGA_Mem_A:byteenable
+	wire          mm_interconnect_0_fpga_mem_a_s1_write;           // mm_interconnect_0:FPGA_Mem_A_s1_write -> FPGA_Mem_A:write
+	wire  [127:0] mm_interconnect_0_fpga_mem_a_s1_writedata;       // mm_interconnect_0:FPGA_Mem_A_s1_writedata -> FPGA_Mem_A:writedata
+	wire          mm_interconnect_0_fpga_mem_a_s1_clken;           // mm_interconnect_0:FPGA_Mem_A_s1_clken -> FPGA_Mem_A:clken
+	wire          mm_interconnect_0_fpga_mem_b_s1_chipselect;      // mm_interconnect_0:FPGA_Mem_B_s1_chipselect -> FPGA_Mem_B:chipselect
+	wire  [127:0] mm_interconnect_0_fpga_mem_b_s1_readdata;        // FPGA_Mem_B:readdata -> mm_interconnect_0:FPGA_Mem_B_s1_readdata
+	wire   [11:0] mm_interconnect_0_fpga_mem_b_s1_address;         // mm_interconnect_0:FPGA_Mem_B_s1_address -> FPGA_Mem_B:address
+	wire   [15:0] mm_interconnect_0_fpga_mem_b_s1_byteenable;      // mm_interconnect_0:FPGA_Mem_B_s1_byteenable -> FPGA_Mem_B:byteenable
+	wire          mm_interconnect_0_fpga_mem_b_s1_write;           // mm_interconnect_0:FPGA_Mem_B_s1_write -> FPGA_Mem_B:write
+	wire  [127:0] mm_interconnect_0_fpga_mem_b_s1_writedata;       // mm_interconnect_0:FPGA_Mem_B_s1_writedata -> FPGA_Mem_B:writedata
+	wire          mm_interconnect_0_fpga_mem_b_s1_clken;           // mm_interconnect_0:FPGA_Mem_B_s1_clken -> FPGA_Mem_B:clken
+	wire          mm_interconnect_0_fpga_mem_c_s1_chipselect;      // mm_interconnect_0:FPGA_Mem_C_s1_chipselect -> FPGA_Mem_C:chipselect
+	wire  [127:0] mm_interconnect_0_fpga_mem_c_s1_readdata;        // FPGA_Mem_C:readdata -> mm_interconnect_0:FPGA_Mem_C_s1_readdata
+	wire   [11:0] mm_interconnect_0_fpga_mem_c_s1_address;         // mm_interconnect_0:FPGA_Mem_C_s1_address -> FPGA_Mem_C:address
+	wire   [15:0] mm_interconnect_0_fpga_mem_c_s1_byteenable;      // mm_interconnect_0:FPGA_Mem_C_s1_byteenable -> FPGA_Mem_C:byteenable
+	wire          mm_interconnect_0_fpga_mem_c_s1_write;           // mm_interconnect_0:FPGA_Mem_C_s1_write -> FPGA_Mem_C:write
+	wire  [127:0] mm_interconnect_0_fpga_mem_c_s1_writedata;       // mm_interconnect_0:FPGA_Mem_C_s1_writedata -> FPGA_Mem_C:writedata
+	wire          mm_interconnect_0_fpga_mem_c_s1_clken;           // mm_interconnect_0:FPGA_Mem_C_s1_clken -> FPGA_Mem_C:clken
 	wire    [1:0] hps_0_h2f_lw_axi_master_awburst;                 // hps_0:h2f_lw_AWBURST -> mm_interconnect_1:hps_0_h2f_lw_axi_master_awburst
 	wire    [3:0] hps_0_h2f_lw_axi_master_arlen;                   // hps_0:h2f_lw_ARLEN -> mm_interconnect_1:hps_0_h2f_lw_axi_master_arlen
 	wire    [3:0] hps_0_h2f_lw_axi_master_wstrb;                   // hps_0:h2f_lw_WSTRB -> mm_interconnect_1:hps_0_h2f_lw_axi_master_wstrb
@@ -199,29 +227,71 @@ module soc_system (
 	wire          mm_interconnect_1_instruction_mem_s1_clken;      // mm_interconnect_1:Instruction_Mem_s1_clken -> Instruction_Mem:clken
 	wire   [31:0] hps_0_f2h_irq0_irq;                              // irq_mapper:sender_irq -> hps_0:f2h_irq_p0
 	wire   [31:0] hps_0_f2h_irq1_irq;                              // irq_mapper_001:sender_irq -> hps_0:f2h_irq_p1
-	wire          rst_controller_reset_out_reset;                  // rst_controller:reset_out -> [FPGA_Mem:reset, Instruction_Mem:reset, led_pio:reset_n, mm_interconnect_0:FPGA_Mem_reset1_reset_bridge_in_reset_reset, mm_interconnect_1:led_pio_reset_reset_bridge_in_reset_reset, rst_translator:in_reset]
-	wire          rst_controller_reset_out_reset_req;              // rst_controller:reset_req -> [FPGA_Mem:reset_req, Instruction_Mem:reset_req, rst_translator:reset_req_in]
+	wire          rst_controller_reset_out_reset;                  // rst_controller:reset_out -> [FPGA_Mem_A:reset, FPGA_Mem_B:reset, FPGA_Mem_C:reset, Instruction_Mem:reset, led_pio:reset_n, mm_interconnect_0:FPGA_Mem_A_reset1_reset_bridge_in_reset_reset, mm_interconnect_1:led_pio_reset_reset_bridge_in_reset_reset, rst_translator:in_reset]
+	wire          rst_controller_reset_out_reset_req;              // rst_controller:reset_req -> [FPGA_Mem_A:reset_req, FPGA_Mem_B:reset_req, FPGA_Mem_C:reset_req, Instruction_Mem:reset_req, rst_translator:reset_req_in]
 	wire          rst_controller_001_reset_out_reset;              // rst_controller_001:reset_out -> [mm_interconnect_0:hps_0_h2f_axi_master_agent_clk_reset_reset_bridge_in_reset_reset, mm_interconnect_1:hps_0_h2f_lw_axi_master_agent_clk_reset_reset_bridge_in_reset_reset]
 
-	soc_system_FPGA_Mem fpga_mem (
-		.address     (mm_interconnect_0_fpga_mem_s1_address),    //     s1.address
-		.clken       (mm_interconnect_0_fpga_mem_s1_clken),      //       .clken
-		.chipselect  (mm_interconnect_0_fpga_mem_s1_chipselect), //       .chipselect
-		.write       (mm_interconnect_0_fpga_mem_s1_write),      //       .write
-		.readdata    (mm_interconnect_0_fpga_mem_s1_readdata),   //       .readdata
-		.writedata   (mm_interconnect_0_fpga_mem_s1_writedata),  //       .writedata
-		.byteenable  (mm_interconnect_0_fpga_mem_s1_byteenable), //       .byteenable
-		.address2    (fpga_mem_address),                         //     s2.address
-		.chipselect2 (fpga_mem_chipselect),                      //       .chipselect
-		.clken2      (fpga_mem_clken),                           //       .clken
-		.write2      (fpga_mem_write),                           //       .write
-		.readdata2   (fpga_mem_readdata),                        //       .readdata
-		.writedata2  (fpga_mem_writedata),                       //       .writedata
-		.byteenable2 (fpga_mem_byteenable),                      //       .byteenable
-		.clk         (clk_clk),                                  //   clk1.clk
-		.reset       (rst_controller_reset_out_reset),           // reset1.reset
-		.reset_req   (rst_controller_reset_out_reset_req),       //       .reset_req
-		.freeze      (1'b0)                                      // (terminated)
+	soc_system_FPGA_Mem_A fpga_mem_a (
+		.address     (mm_interconnect_0_fpga_mem_a_s1_address),    //     s1.address
+		.clken       (mm_interconnect_0_fpga_mem_a_s1_clken),      //       .clken
+		.chipselect  (mm_interconnect_0_fpga_mem_a_s1_chipselect), //       .chipselect
+		.write       (mm_interconnect_0_fpga_mem_a_s1_write),      //       .write
+		.readdata    (mm_interconnect_0_fpga_mem_a_s1_readdata),   //       .readdata
+		.writedata   (mm_interconnect_0_fpga_mem_a_s1_writedata),  //       .writedata
+		.byteenable  (mm_interconnect_0_fpga_mem_a_s1_byteenable), //       .byteenable
+		.address2    (fpga_mem_a_address),                         //     s2.address
+		.chipselect2 (fpga_mem_a_chipselect),                      //       .chipselect
+		.clken2      (fpga_mem_a_clken),                           //       .clken
+		.write2      (fpga_mem_a_write),                           //       .write
+		.readdata2   (fpga_mem_a_readdata),                        //       .readdata
+		.writedata2  (fpga_mem_a_writedata),                       //       .writedata
+		.byteenable2 (fpga_mem_a_byteenable),                      //       .byteenable
+		.clk         (clk_clk),                                    //   clk1.clk
+		.reset       (rst_controller_reset_out_reset),             // reset1.reset
+		.reset_req   (rst_controller_reset_out_reset_req),         //       .reset_req
+		.freeze      (1'b0)                                        // (terminated)
+	);
+
+	soc_system_FPGA_Mem_B fpga_mem_b (
+		.address     (mm_interconnect_0_fpga_mem_b_s1_address),    //     s1.address
+		.clken       (mm_interconnect_0_fpga_mem_b_s1_clken),      //       .clken
+		.chipselect  (mm_interconnect_0_fpga_mem_b_s1_chipselect), //       .chipselect
+		.write       (mm_interconnect_0_fpga_mem_b_s1_write),      //       .write
+		.readdata    (mm_interconnect_0_fpga_mem_b_s1_readdata),   //       .readdata
+		.writedata   (mm_interconnect_0_fpga_mem_b_s1_writedata),  //       .writedata
+		.byteenable  (mm_interconnect_0_fpga_mem_b_s1_byteenable), //       .byteenable
+		.address2    (fpga_mem_b_address),                         //     s2.address
+		.chipselect2 (fpga_mem_b_chipselect),                      //       .chipselect
+		.clken2      (fpga_mem_b_clken),                           //       .clken
+		.write2      (fpga_mem_b_write),                           //       .write
+		.readdata2   (fpga_mem_b_readdata),                        //       .readdata
+		.writedata2  (fpga_mem_b_writedata),                       //       .writedata
+		.byteenable2 (fpga_mem_b_byteenable),                      //       .byteenable
+		.clk         (clk_clk),                                    //   clk1.clk
+		.reset       (rst_controller_reset_out_reset),             // reset1.reset
+		.reset_req   (rst_controller_reset_out_reset_req),         //       .reset_req
+		.freeze      (1'b0)                                        // (terminated)
+	);
+
+	soc_system_FPGA_Mem_C fpga_mem_c (
+		.address     (mm_interconnect_0_fpga_mem_c_s1_address),    //     s1.address
+		.clken       (mm_interconnect_0_fpga_mem_c_s1_clken),      //       .clken
+		.chipselect  (mm_interconnect_0_fpga_mem_c_s1_chipselect), //       .chipselect
+		.write       (mm_interconnect_0_fpga_mem_c_s1_write),      //       .write
+		.readdata    (mm_interconnect_0_fpga_mem_c_s1_readdata),   //       .readdata
+		.writedata   (mm_interconnect_0_fpga_mem_c_s1_writedata),  //       .writedata
+		.byteenable  (mm_interconnect_0_fpga_mem_c_s1_byteenable), //       .byteenable
+		.address2    (fpga_mem_c_address),                         //     s2.address
+		.chipselect2 (fpga_mem_c_chipselect),                      //       .chipselect
+		.clken2      (fpga_mem_c_clken),                           //       .clken
+		.write2      (fpga_mem_c_write),                           //       .write
+		.readdata2   (fpga_mem_c_readdata),                        //       .readdata
+		.writedata2  (fpga_mem_c_writedata),                       //       .writedata
+		.byteenable2 (fpga_mem_c_byteenable),                      //       .byteenable
+		.clk         (clk_clk),                                    //   clk1.clk
+		.reset       (rst_controller_reset_out_reset),             // reset1.reset
+		.reset_req   (rst_controller_reset_out_reset_req),         //       .reset_req
+		.freeze      (1'b0)                                        // (terminated)
 	);
 
 	soc_system_Instruction_Mem instruction_mem (
@@ -246,8 +316,8 @@ module soc_system (
 	);
 
 	soc_system_hps_0 #(
-		.F2S_Width (2),
-		.S2F_Width (2)
+		.F2S_Width (3),
+		.S2F_Width (3)
 	) hps_0 (
 		.f2h_cold_rst_req_n       (hps_0_f2h_cold_reset_req_reset_n),      //  f2h_cold_reset_req.reset_n
 		.f2h_dbg_rst_req_n        (hps_0_f2h_debug_reset_req_reset_n),     // f2h_debug_reset_req.reset_n
@@ -471,52 +541,66 @@ module soc_system (
 	);
 
 	soc_system_mm_interconnect_0 mm_interconnect_0 (
-		.hps_0_h2f_axi_master_awid                                        (hps_0_h2f_axi_master_awid),                //                                       hps_0_h2f_axi_master.awid
-		.hps_0_h2f_axi_master_awaddr                                      (hps_0_h2f_axi_master_awaddr),              //                                                           .awaddr
-		.hps_0_h2f_axi_master_awlen                                       (hps_0_h2f_axi_master_awlen),               //                                                           .awlen
-		.hps_0_h2f_axi_master_awsize                                      (hps_0_h2f_axi_master_awsize),              //                                                           .awsize
-		.hps_0_h2f_axi_master_awburst                                     (hps_0_h2f_axi_master_awburst),             //                                                           .awburst
-		.hps_0_h2f_axi_master_awlock                                      (hps_0_h2f_axi_master_awlock),              //                                                           .awlock
-		.hps_0_h2f_axi_master_awcache                                     (hps_0_h2f_axi_master_awcache),             //                                                           .awcache
-		.hps_0_h2f_axi_master_awprot                                      (hps_0_h2f_axi_master_awprot),              //                                                           .awprot
-		.hps_0_h2f_axi_master_awvalid                                     (hps_0_h2f_axi_master_awvalid),             //                                                           .awvalid
-		.hps_0_h2f_axi_master_awready                                     (hps_0_h2f_axi_master_awready),             //                                                           .awready
-		.hps_0_h2f_axi_master_wid                                         (hps_0_h2f_axi_master_wid),                 //                                                           .wid
-		.hps_0_h2f_axi_master_wdata                                       (hps_0_h2f_axi_master_wdata),               //                                                           .wdata
-		.hps_0_h2f_axi_master_wstrb                                       (hps_0_h2f_axi_master_wstrb),               //                                                           .wstrb
-		.hps_0_h2f_axi_master_wlast                                       (hps_0_h2f_axi_master_wlast),               //                                                           .wlast
-		.hps_0_h2f_axi_master_wvalid                                      (hps_0_h2f_axi_master_wvalid),              //                                                           .wvalid
-		.hps_0_h2f_axi_master_wready                                      (hps_0_h2f_axi_master_wready),              //                                                           .wready
-		.hps_0_h2f_axi_master_bid                                         (hps_0_h2f_axi_master_bid),                 //                                                           .bid
-		.hps_0_h2f_axi_master_bresp                                       (hps_0_h2f_axi_master_bresp),               //                                                           .bresp
-		.hps_0_h2f_axi_master_bvalid                                      (hps_0_h2f_axi_master_bvalid),              //                                                           .bvalid
-		.hps_0_h2f_axi_master_bready                                      (hps_0_h2f_axi_master_bready),              //                                                           .bready
-		.hps_0_h2f_axi_master_arid                                        (hps_0_h2f_axi_master_arid),                //                                                           .arid
-		.hps_0_h2f_axi_master_araddr                                      (hps_0_h2f_axi_master_araddr),              //                                                           .araddr
-		.hps_0_h2f_axi_master_arlen                                       (hps_0_h2f_axi_master_arlen),               //                                                           .arlen
-		.hps_0_h2f_axi_master_arsize                                      (hps_0_h2f_axi_master_arsize),              //                                                           .arsize
-		.hps_0_h2f_axi_master_arburst                                     (hps_0_h2f_axi_master_arburst),             //                                                           .arburst
-		.hps_0_h2f_axi_master_arlock                                      (hps_0_h2f_axi_master_arlock),              //                                                           .arlock
-		.hps_0_h2f_axi_master_arcache                                     (hps_0_h2f_axi_master_arcache),             //                                                           .arcache
-		.hps_0_h2f_axi_master_arprot                                      (hps_0_h2f_axi_master_arprot),              //                                                           .arprot
-		.hps_0_h2f_axi_master_arvalid                                     (hps_0_h2f_axi_master_arvalid),             //                                                           .arvalid
-		.hps_0_h2f_axi_master_arready                                     (hps_0_h2f_axi_master_arready),             //                                                           .arready
-		.hps_0_h2f_axi_master_rid                                         (hps_0_h2f_axi_master_rid),                 //                                                           .rid
-		.hps_0_h2f_axi_master_rdata                                       (hps_0_h2f_axi_master_rdata),               //                                                           .rdata
-		.hps_0_h2f_axi_master_rresp                                       (hps_0_h2f_axi_master_rresp),               //                                                           .rresp
-		.hps_0_h2f_axi_master_rlast                                       (hps_0_h2f_axi_master_rlast),               //                                                           .rlast
-		.hps_0_h2f_axi_master_rvalid                                      (hps_0_h2f_axi_master_rvalid),              //                                                           .rvalid
-		.hps_0_h2f_axi_master_rready                                      (hps_0_h2f_axi_master_rready),              //                                                           .rready
-		.clk_0_clk_clk                                                    (clk_clk),                                  //                                                  clk_0_clk.clk
-		.FPGA_Mem_reset1_reset_bridge_in_reset_reset                      (rst_controller_reset_out_reset),           //                      FPGA_Mem_reset1_reset_bridge_in_reset.reset
-		.hps_0_h2f_axi_master_agent_clk_reset_reset_bridge_in_reset_reset (rst_controller_001_reset_out_reset),       // hps_0_h2f_axi_master_agent_clk_reset_reset_bridge_in_reset.reset
-		.FPGA_Mem_s1_address                                              (mm_interconnect_0_fpga_mem_s1_address),    //                                                FPGA_Mem_s1.address
-		.FPGA_Mem_s1_write                                                (mm_interconnect_0_fpga_mem_s1_write),      //                                                           .write
-		.FPGA_Mem_s1_readdata                                             (mm_interconnect_0_fpga_mem_s1_readdata),   //                                                           .readdata
-		.FPGA_Mem_s1_writedata                                            (mm_interconnect_0_fpga_mem_s1_writedata),  //                                                           .writedata
-		.FPGA_Mem_s1_byteenable                                           (mm_interconnect_0_fpga_mem_s1_byteenable), //                                                           .byteenable
-		.FPGA_Mem_s1_chipselect                                           (mm_interconnect_0_fpga_mem_s1_chipselect), //                                                           .chipselect
-		.FPGA_Mem_s1_clken                                                (mm_interconnect_0_fpga_mem_s1_clken)       //                                                           .clken
+		.hps_0_h2f_axi_master_awid                                        (hps_0_h2f_axi_master_awid),                  //                                       hps_0_h2f_axi_master.awid
+		.hps_0_h2f_axi_master_awaddr                                      (hps_0_h2f_axi_master_awaddr),                //                                                           .awaddr
+		.hps_0_h2f_axi_master_awlen                                       (hps_0_h2f_axi_master_awlen),                 //                                                           .awlen
+		.hps_0_h2f_axi_master_awsize                                      (hps_0_h2f_axi_master_awsize),                //                                                           .awsize
+		.hps_0_h2f_axi_master_awburst                                     (hps_0_h2f_axi_master_awburst),               //                                                           .awburst
+		.hps_0_h2f_axi_master_awlock                                      (hps_0_h2f_axi_master_awlock),                //                                                           .awlock
+		.hps_0_h2f_axi_master_awcache                                     (hps_0_h2f_axi_master_awcache),               //                                                           .awcache
+		.hps_0_h2f_axi_master_awprot                                      (hps_0_h2f_axi_master_awprot),                //                                                           .awprot
+		.hps_0_h2f_axi_master_awvalid                                     (hps_0_h2f_axi_master_awvalid),               //                                                           .awvalid
+		.hps_0_h2f_axi_master_awready                                     (hps_0_h2f_axi_master_awready),               //                                                           .awready
+		.hps_0_h2f_axi_master_wid                                         (hps_0_h2f_axi_master_wid),                   //                                                           .wid
+		.hps_0_h2f_axi_master_wdata                                       (hps_0_h2f_axi_master_wdata),                 //                                                           .wdata
+		.hps_0_h2f_axi_master_wstrb                                       (hps_0_h2f_axi_master_wstrb),                 //                                                           .wstrb
+		.hps_0_h2f_axi_master_wlast                                       (hps_0_h2f_axi_master_wlast),                 //                                                           .wlast
+		.hps_0_h2f_axi_master_wvalid                                      (hps_0_h2f_axi_master_wvalid),                //                                                           .wvalid
+		.hps_0_h2f_axi_master_wready                                      (hps_0_h2f_axi_master_wready),                //                                                           .wready
+		.hps_0_h2f_axi_master_bid                                         (hps_0_h2f_axi_master_bid),                   //                                                           .bid
+		.hps_0_h2f_axi_master_bresp                                       (hps_0_h2f_axi_master_bresp),                 //                                                           .bresp
+		.hps_0_h2f_axi_master_bvalid                                      (hps_0_h2f_axi_master_bvalid),                //                                                           .bvalid
+		.hps_0_h2f_axi_master_bready                                      (hps_0_h2f_axi_master_bready),                //                                                           .bready
+		.hps_0_h2f_axi_master_arid                                        (hps_0_h2f_axi_master_arid),                  //                                                           .arid
+		.hps_0_h2f_axi_master_araddr                                      (hps_0_h2f_axi_master_araddr),                //                                                           .araddr
+		.hps_0_h2f_axi_master_arlen                                       (hps_0_h2f_axi_master_arlen),                 //                                                           .arlen
+		.hps_0_h2f_axi_master_arsize                                      (hps_0_h2f_axi_master_arsize),                //                                                           .arsize
+		.hps_0_h2f_axi_master_arburst                                     (hps_0_h2f_axi_master_arburst),               //                                                           .arburst
+		.hps_0_h2f_axi_master_arlock                                      (hps_0_h2f_axi_master_arlock),                //                                                           .arlock
+		.hps_0_h2f_axi_master_arcache                                     (hps_0_h2f_axi_master_arcache),               //                                                           .arcache
+		.hps_0_h2f_axi_master_arprot                                      (hps_0_h2f_axi_master_arprot),                //                                                           .arprot
+		.hps_0_h2f_axi_master_arvalid                                     (hps_0_h2f_axi_master_arvalid),               //                                                           .arvalid
+		.hps_0_h2f_axi_master_arready                                     (hps_0_h2f_axi_master_arready),               //                                                           .arready
+		.hps_0_h2f_axi_master_rid                                         (hps_0_h2f_axi_master_rid),                   //                                                           .rid
+		.hps_0_h2f_axi_master_rdata                                       (hps_0_h2f_axi_master_rdata),                 //                                                           .rdata
+		.hps_0_h2f_axi_master_rresp                                       (hps_0_h2f_axi_master_rresp),                 //                                                           .rresp
+		.hps_0_h2f_axi_master_rlast                                       (hps_0_h2f_axi_master_rlast),                 //                                                           .rlast
+		.hps_0_h2f_axi_master_rvalid                                      (hps_0_h2f_axi_master_rvalid),                //                                                           .rvalid
+		.hps_0_h2f_axi_master_rready                                      (hps_0_h2f_axi_master_rready),                //                                                           .rready
+		.clk_0_clk_clk                                                    (clk_clk),                                    //                                                  clk_0_clk.clk
+		.FPGA_Mem_A_reset1_reset_bridge_in_reset_reset                    (rst_controller_reset_out_reset),             //                    FPGA_Mem_A_reset1_reset_bridge_in_reset.reset
+		.hps_0_h2f_axi_master_agent_clk_reset_reset_bridge_in_reset_reset (rst_controller_001_reset_out_reset),         // hps_0_h2f_axi_master_agent_clk_reset_reset_bridge_in_reset.reset
+		.FPGA_Mem_A_s1_address                                            (mm_interconnect_0_fpga_mem_a_s1_address),    //                                              FPGA_Mem_A_s1.address
+		.FPGA_Mem_A_s1_write                                              (mm_interconnect_0_fpga_mem_a_s1_write),      //                                                           .write
+		.FPGA_Mem_A_s1_readdata                                           (mm_interconnect_0_fpga_mem_a_s1_readdata),   //                                                           .readdata
+		.FPGA_Mem_A_s1_writedata                                          (mm_interconnect_0_fpga_mem_a_s1_writedata),  //                                                           .writedata
+		.FPGA_Mem_A_s1_byteenable                                         (mm_interconnect_0_fpga_mem_a_s1_byteenable), //                                                           .byteenable
+		.FPGA_Mem_A_s1_chipselect                                         (mm_interconnect_0_fpga_mem_a_s1_chipselect), //                                                           .chipselect
+		.FPGA_Mem_A_s1_clken                                              (mm_interconnect_0_fpga_mem_a_s1_clken),      //                                                           .clken
+		.FPGA_Mem_B_s1_address                                            (mm_interconnect_0_fpga_mem_b_s1_address),    //                                              FPGA_Mem_B_s1.address
+		.FPGA_Mem_B_s1_write                                              (mm_interconnect_0_fpga_mem_b_s1_write),      //                                                           .write
+		.FPGA_Mem_B_s1_readdata                                           (mm_interconnect_0_fpga_mem_b_s1_readdata),   //                                                           .readdata
+		.FPGA_Mem_B_s1_writedata                                          (mm_interconnect_0_fpga_mem_b_s1_writedata),  //                                                           .writedata
+		.FPGA_Mem_B_s1_byteenable                                         (mm_interconnect_0_fpga_mem_b_s1_byteenable), //                                                           .byteenable
+		.FPGA_Mem_B_s1_chipselect                                         (mm_interconnect_0_fpga_mem_b_s1_chipselect), //                                                           .chipselect
+		.FPGA_Mem_B_s1_clken                                              (mm_interconnect_0_fpga_mem_b_s1_clken),      //                                                           .clken
+		.FPGA_Mem_C_s1_address                                            (mm_interconnect_0_fpga_mem_c_s1_address),    //                                              FPGA_Mem_C_s1.address
+		.FPGA_Mem_C_s1_write                                              (mm_interconnect_0_fpga_mem_c_s1_write),      //                                                           .write
+		.FPGA_Mem_C_s1_readdata                                           (mm_interconnect_0_fpga_mem_c_s1_readdata),   //                                                           .readdata
+		.FPGA_Mem_C_s1_writedata                                          (mm_interconnect_0_fpga_mem_c_s1_writedata),  //                                                           .writedata
+		.FPGA_Mem_C_s1_byteenable                                         (mm_interconnect_0_fpga_mem_c_s1_byteenable), //                                                           .byteenable
+		.FPGA_Mem_C_s1_chipselect                                         (mm_interconnect_0_fpga_mem_c_s1_chipselect), //                                                           .chipselect
+		.FPGA_Mem_C_s1_clken                                              (mm_interconnect_0_fpga_mem_c_s1_clken)       //                                                           .clken
 	);
 
 	soc_system_mm_interconnect_1 mm_interconnect_1 (

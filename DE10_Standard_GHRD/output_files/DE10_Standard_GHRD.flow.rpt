@@ -1,5 +1,5 @@
 Flow report for DE10_Standard_GHRD
-Sat Jan 20 14:54:02 2024
+Sat Jan 20 21:15:20 2024
 Quartus Prime Version 16.1.2 Build 203 01/18/2017 SJ Standard Edition
 
 
@@ -41,15 +41,15 @@ agreement for further details.
 +-----------------------------------------------------------------------------------+
 ; Flow Summary                                                                      ;
 +---------------------------------+-------------------------------------------------+
-; Flow Status                     ; Successful - Sat Jan 20 14:54:01 2024           ;
+; Flow Status                     ; Successful - Sat Jan 20 21:14:47 2024           ;
 ; Quartus Prime Version           ; 16.1.2 Build 203 01/18/2017 SJ Standard Edition ;
 ; Revision Name                   ; DE10_Standard_GHRD                              ;
 ; Top-level Entity Name           ; DE10_Standard_GHRD                              ;
 ; Family                          ; Cyclone V                                       ;
 ; Device                          ; 5CSXFC6D6F31C6                                  ;
 ; Timing Models                   ; Final                                           ;
-; Logic utilization (in ALMs)     ; 1,114 / 41,910 ( 3 % )                          ;
-; Total registers                 ; 1643                                            ;
+; Logic utilization (in ALMs)     ; 1,522 / 41,910 ( 4 % )                          ;
+; Total registers                 ; 2671                                            ;
 ; Total pins                      ; 338 / 499 ( 68 % )                              ;
 ; Total virtual pins              ; 0                                               ;
 ; Total block memory bits         ; 1,605,632 / 5,662,720 ( 28 % )                  ;
@@ -68,7 +68,7 @@ agreement for further details.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 01/20/2024 14:50:01 ;
+; Start date & time ; 01/20/2024 21:10:27 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; DE10_Standard_GHRD  ;
 +-------------------+---------------------+
@@ -79,7 +79,7 @@ agreement for further details.
 +---------------------------------------+--------------------------------------------------------------------------+---------------+--------------------------------+------------+
 ; Assignment Name                       ; Value                                                                    ; Default Value ; Entity Name                    ; Section Id ;
 +---------------------------------------+--------------------------------------------------------------------------+---------------+--------------------------------+------------+
-; COMPILER_SIGNATURE_ID                 ; 273659134299272.170578019916491                                          ; --            ; --                             ; --         ;
+; COMPILER_SIGNATURE_ID                 ; 273659134299272.170580302622655                                          ; --            ; --                             ; --         ;
 ; ECO_REGENERATE_REPORT                 ; On                                                                       ; Off           ; --                             ; --         ;
 ; HPS_ISW_FILE                          ; soc_system/synthesis/submodules/sequencer/sdram_io.pre.h                 ; --            ; soc_system_hps_0_hps_io_border ; --         ;
 ; HPS_ISW_FILE                          ; soc_system/synthesis/submodules/sequencer/alt_types.pre.h                ; --            ; soc_system_hps_0_hps_io_border ; --         ;
@@ -122,32 +122,36 @@ agreement for further details.
 ; PROJECT_OUTPUT_DIRECTORY              ; output_files                                                             ; --            ; --                             ; --         ;
 ; SLD_FILE                              ; soc_system/synthesis/soc_system.regmap                                   ; --            ; --                             ; --         ;
 ; SLD_FILE                              ; soc_system/synthesis/soc_system.debuginfo                                ; --            ; --                             ; --         ;
-; SLD_INFO                              ; QSYS_NAME soc_system HAS_SOPCINFO 1 GENERATION_ID 1705778976             ; --            ; soc_system                     ; --         ;
+; SLD_INFO                              ; QSYS_NAME soc_system HAS_SOPCINFO 1 GENERATION_ID 1705801399             ; --            ; soc_system                     ; --         ;
 ; SOPCINFO_FILE                         ; soc_system/synthesis/../../soc_system.sopcinfo                           ; --            ; --                             ; --         ;
 ; SYNTHESIS_ONLY_QIP                    ; On                                                                       ; --            ; --                             ; --         ;
 ; USE_DLL_FREQUENCY_FOR_DQS_DELAY_CHAIN ; On                                                                       ; Off           ; --                             ; --         ;
 +---------------------------------------+--------------------------------------------------------------------------+---------------+--------------------------------+------------+
 
 
-+--------------------------------------------------------------------------------------------------------------------------+
-; Flow Elapsed Time                                                                                                        ;
-+----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
-+----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:25     ; 1.0                     ; 1547 MB             ; 00:00:43                           ;
-; Fitter               ; 00:01:04     ; 1.4                     ; 3386 MB             ; 00:04:25                           ;
-; Total                ; 00:01:29     ; --                      ; --                  ; 00:05:08                           ;
-+----------------------+--------------+-------------------------+---------------------+------------------------------------+
++-------------------------------------------------------------------------------------------------------------------------------+
+; Flow Elapsed Time                                                                                                             ;
++---------------------------+--------------+-------------------------+---------------------+------------------------------------+
+; Module Name               ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
++---------------------------+--------------+-------------------------+---------------------+------------------------------------+
+; Analysis & Synthesis      ; 00:00:27     ; 1.0                     ; 1551 MB             ; 00:00:44                           ;
+; Fitter                    ; 00:01:09     ; 1.5                     ; 3387 MB             ; 00:05:13                           ;
+; Assembler                 ; 00:00:10     ; 1.0                     ; 1179 MB             ; 00:00:10                           ;
+; TimeQuest Timing Analyzer ; 00:00:31     ; 1.6                     ; 1987 MB             ; 00:00:37                           ;
+; Total                     ; 00:02:17     ; --                      ; --                  ; 00:06:44                           ;
++---------------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
-+---------------------------------------------------------------------------------------------+
-; Flow OS Summary                                                                             ;
-+----------------------+------------------------------+---------+------------+----------------+
-; Module Name          ; Machine Hostname             ; OS Name ; OS Version ; Processor type ;
-+----------------------+------------------------------+---------+------------+----------------+
-; Analysis & Synthesis ; hh-1305-27.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
-; Fitter               ; hh-1305-27.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
-+----------------------+------------------------------+---------+------------+----------------+
++--------------------------------------------------------------------------------------------------+
+; Flow OS Summary                                                                                  ;
++---------------------------+------------------------------+---------+------------+----------------+
+; Module Name               ; Machine Hostname             ; OS Name ; OS Version ; Processor type ;
++---------------------------+------------------------------+---------+------------+----------------+
+; Analysis & Synthesis      ; hh-1305-27.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
+; Fitter                    ; hh-1305-27.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
+; Assembler                 ; hh-1305-27.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
+; TimeQuest Timing Analyzer ; hh-1305-27.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
++---------------------------+------------------------------+---------+------------+----------------+
 
 
 ------------
@@ -155,6 +159,8 @@ agreement for further details.
 ------------
 quartus_map --read_settings_files=on --write_settings_files=off DE10_Standard_GHRD -c DE10_Standard_GHRD
 quartus_fit --read_settings_files=off --write_settings_files=off DE10_Standard_GHRD -c DE10_Standard_GHRD
+quartus_asm --read_settings_files=off --write_settings_files=off DE10_Standard_GHRD -c DE10_Standard_GHRD
+quartus_sta DE10_Standard_GHRD -c DE10_Standard_GHRD
 
 
 

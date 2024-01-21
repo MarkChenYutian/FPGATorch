@@ -1,6 +1,5 @@
 // consolidated 7 segment hex display library from 18240 material
 // modified to fit the # of hex displays on the DE0-CV board
-`default_nettype none
 
 // seven segment display
 module BCHtoSevenSegment

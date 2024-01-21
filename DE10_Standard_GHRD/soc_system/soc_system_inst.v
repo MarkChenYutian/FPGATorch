@@ -1,12 +1,26 @@
 	soc_system u0 (
 		.clk_clk                               (<connected-to-clk_clk>),                               //                         clk.clk
-		.fpga_mem_address                      (<connected-to-fpga_mem_address>),                      //                    fpga_mem.address
-		.fpga_mem_chipselect                   (<connected-to-fpga_mem_chipselect>),                   //                            .chipselect
-		.fpga_mem_clken                        (<connected-to-fpga_mem_clken>),                        //                            .clken
-		.fpga_mem_write                        (<connected-to-fpga_mem_write>),                        //                            .write
-		.fpga_mem_readdata                     (<connected-to-fpga_mem_readdata>),                     //                            .readdata
-		.fpga_mem_writedata                    (<connected-to-fpga_mem_writedata>),                    //                            .writedata
-		.fpga_mem_byteenable                   (<connected-to-fpga_mem_byteenable>),                   //                            .byteenable
+		.fpga_mem_a_address                    (<connected-to-fpga_mem_a_address>),                    //                  fpga_mem_a.address
+		.fpga_mem_a_chipselect                 (<connected-to-fpga_mem_a_chipselect>),                 //                            .chipselect
+		.fpga_mem_a_clken                      (<connected-to-fpga_mem_a_clken>),                      //                            .clken
+		.fpga_mem_a_write                      (<connected-to-fpga_mem_a_write>),                      //                            .write
+		.fpga_mem_a_readdata                   (<connected-to-fpga_mem_a_readdata>),                   //                            .readdata
+		.fpga_mem_a_writedata                  (<connected-to-fpga_mem_a_writedata>),                  //                            .writedata
+		.fpga_mem_a_byteenable                 (<connected-to-fpga_mem_a_byteenable>),                 //                            .byteenable
+		.fpga_mem_b_address                    (<connected-to-fpga_mem_b_address>),                    //                  fpga_mem_b.address
+		.fpga_mem_b_chipselect                 (<connected-to-fpga_mem_b_chipselect>),                 //                            .chipselect
+		.fpga_mem_b_clken                      (<connected-to-fpga_mem_b_clken>),                      //                            .clken
+		.fpga_mem_b_write                      (<connected-to-fpga_mem_b_write>),                      //                            .write
+		.fpga_mem_b_readdata                   (<connected-to-fpga_mem_b_readdata>),                   //                            .readdata
+		.fpga_mem_b_writedata                  (<connected-to-fpga_mem_b_writedata>),                  //                            .writedata
+		.fpga_mem_b_byteenable                 (<connected-to-fpga_mem_b_byteenable>),                 //                            .byteenable
+		.fpga_mem_c_address                    (<connected-to-fpga_mem_c_address>),                    //                  fpga_mem_c.address
+		.fpga_mem_c_chipselect                 (<connected-to-fpga_mem_c_chipselect>),                 //                            .chipselect
+		.fpga_mem_c_clken                      (<connected-to-fpga_mem_c_clken>),                      //                            .clken
+		.fpga_mem_c_write                      (<connected-to-fpga_mem_c_write>),                      //                            .write
+		.fpga_mem_c_readdata                   (<connected-to-fpga_mem_c_readdata>),                   //                            .readdata
+		.fpga_mem_c_writedata                  (<connected-to-fpga_mem_c_writedata>),                  //                            .writedata
+		.fpga_mem_c_byteenable                 (<connected-to-fpga_mem_c_byteenable>),                 //                            .byteenable
 		.hps_0_f2h_cold_reset_req_reset_n      (<connected-to-hps_0_f2h_cold_reset_req_reset_n>),      //    hps_0_f2h_cold_reset_req.reset_n
 		.hps_0_f2h_debug_reset_req_reset_n     (<connected-to-hps_0_f2h_debug_reset_req_reset_n>),     //   hps_0_f2h_debug_reset_req.reset_n
 		.hps_0_f2h_stm_hw_events_stm_hwevents  (<connected-to-hps_0_f2h_stm_hw_events_stm_hwevents>),  //     hps_0_f2h_stm_hw_events.stm_hwevents

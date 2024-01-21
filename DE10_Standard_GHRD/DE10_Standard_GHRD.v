@@ -222,16 +222,30 @@ module DE10_Standard_GHRD(
   wire [27:0] stm_hw_events;
   wire        fpga_clk_50;
   
-  wire [7:0]   fpga_mem_address;                      //                    fpga_mem.address
-  wire         fpga_mem_chipselect;                   //                            .chipselect
-  wire         fpga_mem_clken;                        //                            .clken
-  wire         fpga_mem_write;                        //                            .write
-  wire [127:0] fpga_mem_readdata;                     //                            .readdata
-  wire [127:0] fpga_mem_writedata;                    //                            .writedata
-  wire [15:0]  fpga_mem_byteenable;                   //                            .byteenable
-  wire         hps_0_f2h_cold_reset_req_reset_n;      //    hps_0_f2h_cold_reset_req.reset_n
-  wire         hps_0_f2h_debug_reset_req_reset_n;     //   hps_0_f2h_debug_reset_req.reset_n
-  
+  wire [10:0]  fpga_mem_a_address;                      //                    fpga_mem.address
+  wire         fpga_mem_a_chipselect;                   //                            .chipselect
+  wire         fpga_mem_a_clken;                        //                            .clken
+  wire         fpga_mem_a_write;                        //                            .write
+  wire [255:0] fpga_mem_a_readdata;                     //                            .readdata
+  wire [255:0] fpga_mem_a_writedata;                    //                            .writedata
+  wire [31:0]  fpga_mem_a_byteenabl;                   //                            .byteenable
+
+  wire [10:0]  fpga_mem_b_address;                      //                    fpga_mem.address
+  wire         fpga_mem_b_chipselect;                   //                            .chipselect
+  wire         fpga_mem_b_clken;                        //                            .clken
+  wire         fpga_mem_b_write;                        //                            .write
+  wire [255:0] fpga_mem_b_readdata;                     //                            .readdata
+  wire [255:0] fpga_mem_b_writedata;                    //                            .writedata
+  wire [31:0]  fpga_mem_b_byteenable;                   //                            .byteenable
+
+  wire [10:0]  fpga_mem_c_address;                      //                    fpga_mem.address
+  wire         fpga_mem_c_chipselect;                   //                            .chipselect
+  wire         fpga_mem_c_clken;                        //                            .clken
+  wire         fpga_mem_c_write;                        //                            .write
+  wire [255:0] fpga_mem_c_readdata;                     //                            .readdata
+  wire [255:0] fpga_mem_c_writedata;                    //                            .writedata
+  wire [31:0]  fpga_mem_c_byteenable;                   //                            .byteenable
+
   wire [9:0]   instruction_mem_address;               //             instruction_mem.address
   wire         instruction_mem_chipselect;            //                            .chipselect
   wire         instruction_mem_clken;                 //                            .clken
@@ -348,14 +362,28 @@ soc_system u0 (
 		  .hps_0_f2h_stm_hw_events_stm_hwevents  (stm_hw_events ),  //        hps_0_f2h_stm_hw_events.stm_hwevents
 		  .hps_0_f2h_warm_reset_req_reset_n      (~hps_warm_reset ),      //       hps_0_f2h_warm_reset_req.reset_n
 		  
-		  .fpga_mem_address                      (fpga_mem_address),                      //                    fpga_mem.address
-        .fpga_mem_chipselect                   (fpga_mem_chipselect),                   //                            .chipselect
-        .fpga_mem_clken                        (fpga_mem_clken),                        //                            .clken
-        .fpga_mem_write                        (fpga_mem_write),                        //                            .write
-        .fpga_mem_readdata                     (fpga_mem_readdata),                     //                            .readdata
-        .fpga_mem_writedata                    (fpga_mem_writedata),                    //                            .writedata
-        .fpga_mem_byteenable                   (fpga_mem_byteenable),                   //                            .byteenable
-        .instruction_mem_address               (instruction_mem_address),               //             instruction_mem.address
+      .fpga_mem_a_address                    (fpga_mem_a_address),                    //                  fpga_mem_a.address
+        .fpga_mem_a_chipselect                 (fpga_mem_a_chipselect),                 //                            .chipselect
+        .fpga_mem_a_clken                      (fpga_mem_a_clken),                      //                            .clken
+        .fpga_mem_a_write                      (fpga_mem_a_write),                      //                            .write
+        .fpga_mem_a_readdata                   (fpga_mem_a_readdata),                   //                            .readdata
+        .fpga_mem_a_writedata                  (fpga_mem_a_writedata),                  //                            .writedata
+        .fpga_mem_a_byteenable                 (fpga_mem_a_byteenable),                 //                            .byteenable
+      .fpga_mem_b_address                    (fpga_mem_b_address),                    //                  fpga_mem_b.address
+        .fpga_mem_b_chipselect                 (fpga_mem_b_chipselect),                 //                            .chipselect
+        .fpga_mem_b_clken                      (fpga_mem_b_clken),                      //                            .clken
+        .fpga_mem_b_write                      (fpga_mem_b_write),                      //                            .write
+        .fpga_mem_b_readdata                   (fpga_mem_b_readdata),                   //                            .readdata
+        .fpga_mem_b_writedata                  (fpga_mem_b_writedata),                  //                            .writedata
+        .fpga_mem_b_byteenable                 (fpga_mem_b_byteenable),                 //                            .byteenable
+      .fpga_mem_c_address                    (fpga_mem_c_address),                    //                  fpga_mem_c.address
+        .fpga_mem_c_chipselect                 (fpga_mem_c_chipselect),                 //                            .chipselect
+        .fpga_mem_c_clken                      (fpga_mem_c_clken),                      //                            .clken
+        .fpga_mem_c_write                      (fpga_mem_c_write),                      //                            .write
+        .fpga_mem_c_readdata                   (fpga_mem_c_readdata),                   //                            .readdata
+        .fpga_mem_c_writedata                  (fpga_mem_c_writedata),                  //                            .writedata
+        .fpga_mem_c_byteenable                 (fpga_mem_c_byteenable),                 //                            .byteenable
+		  .instruction_mem_address               (instruction_mem_address),               //             instruction_mem.address
         .instruction_mem_chipselect            (instruction_mem_chipselect),            //                            .chipselect
         .instruction_mem_clken                 (instruction_mem_clken),                 //                            .clken
         .instruction_mem_write                 (instruction_mem_write),                 //                            .write
@@ -433,6 +461,10 @@ else
 end
 
 assign LEDR[0]=led_level;
+reg delay1;
+always @(posedge fpga_clk_50) begin
+  delay1 <= ~KEY[0];
+end
 endmodule
 
   

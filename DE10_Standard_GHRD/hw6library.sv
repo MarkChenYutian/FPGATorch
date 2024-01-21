@@ -1,4 +1,3 @@
-`default_nettype none
 // library file from 240 spring 2023, using Registor module
 /*
  * A library of components, usable for many future hardware designs.
@@ -323,3 +322,94 @@ module FIFO #(parameter WIDTH=32) (
     end
   end
 endmodule : FIFO
+
+module FPGA_Mem_OP 
+  #(parameter ADDR_WIDTH = 11,
+    parameter WORD_WIDTH = 255,
+    parameter BYTEENABLE_WIDTH = WORD_WIDTH / 4)
+  (input logic clk, write, reset_n, mem_enable,
+  input logic [ADDR_WIDTH-1:0] addr,
+  input logic [WORD_WIDTH-1:0] writeData,
+  output logic [WORD_WIDTH-1:0] readData,
+  output logic readValid,
+  output logic[ADDR_WIDTH-1:0] mem_addr,
+  output logic mem_chipselect,
+  output logic mem_clken,
+  output logic mem_write,
+  input logic [WORD_WIDTH-1:0] mem_readdata,
+  output logic [WORD_WIDTH-1:0] mem_writedata,
+  output logic [BYTEENABLE_WIDTH-1:0] mem_byteenable);
+  enum logic [1:0] {WAIT, READ} currState, nextState;
+
+  always_comb begin
+    mem_byteenable = {BYTEENABLE_WIDTH{1'b1}};
+    mem_clken = 1'b1;
+    readData = 0;
+    readValid = 1'b0;
+    mem_addr = 0;
+    mem_chipselect = 1'b0;
+    mem_write = 1'b0;
+    mem_writedata = 0;
+    case(currState)
+    WAIT:begin
+      case({mem_enable, write})
+      2'b10: begin
+        readData = 0;
+        readValid = 1'b0;
+        mem_addr = addr;
+        mem_chipselect = 1'b1;
+        mem_write = 1'b0;
+        mem_writedata = 0;
+        nextState = READ;
+      end
+      2'b11: begin
+        readData = 0;
+        readValid = 1'b0;
+        mem_addr = addr;
+        mem_chipselect = 1'b1;
+        mem_write = 1'b1;
+        mem_writedata = writeData;
+        nextState = WAIT;
+      end
+      default: begin
+        readData = 0;
+        readValid = 1'b0;
+        mem_addr = 0;
+        mem_chipselect = 1'b0;
+        mem_write = 1'b0;
+        mem_writedata = 0;
+        nextState = WAIT;
+      end
+      endcase 
+    end
+    READ:begin
+      readData = mem_readdata;
+      readValid = 1'b1;
+      mem_addr = 0;
+      mem_chipselect = 1'b0;
+      mem_write = 1'b0;
+      mem_writedata = 0;
+      nextState = WAIT;
+    end
+    default: begin
+      readData = 0;
+      readValid = 1'b0;
+      mem_addr = 0;
+      mem_chipselect = 1'b0;
+      mem_write = 1'b0;
+      mem_writedata = 0;
+      nextState = WAIT;
+    end
+    endcase
+  end
+
+  always_ff @(posedge clk, negedge reset_n) begin
+    if (reset_n) begin
+      currState <= nextState;
+    end
+    else begin
+      currState <= WAIT;
+    end
+  end
+  
+endmodule
