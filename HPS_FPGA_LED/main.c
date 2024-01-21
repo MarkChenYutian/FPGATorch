@@ -35,7 +35,7 @@ int main() {
 	void *Mat_B_Base;
 	void *Mat_C_Base;
 	uint32_t Instruction;
-
+	printf("Hello\n");
 	// map the address space for the LED registers into user space so we can interact with them.
 	// we'll actually map in the entire CSR span of the HPS since we want to access various registers within that span
 
@@ -78,6 +78,7 @@ int main() {
 	}
 	float mat_res[4];
 	memcpy(&mat_res, Mat_C_Base, sizeof(float) * 4);
+
 	int i;
 	for (i = 0; i < 4; i++) {
 		printf("%f\n", mat_res[i]);
@@ -86,7 +87,7 @@ int main() {
 	loop_count = 0;
 	led_mask = 0x01;
 	led_direction = 0; // 0: left to right direction
-	while( loop_count < 5 ) {
+	while( loop_count < 15 ) {
 		
 		// control led
 		*(uint32_t *)h2p_lw_led_addr = ~led_mask; 
@@ -106,7 +107,7 @@ int main() {
 				loop_count++;
 			}
 		}
-	} // while
+	}
 	
 	// clean up our memory mapping and exit
 	
