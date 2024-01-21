@@ -36,7 +36,7 @@ module fakemem
   logic [63:0][31:0] mem;
 
   always_comb begin
-    mem[0] = {4'd1, 7'd8, 7'd12, 7'd8, 7'd12};
+    mem[0] = {4'd1, 7'd16, 7'd12, 7'd16, 7'd12};
     // mem[1] = (5);
     // mem[9:2] = (0);
     // mem[10] = (1);
@@ -58,14 +58,26 @@ module fakemem
     mem[13] = $shortrealtobits(4);
     mem[14] = $shortrealtobits(5);
     mem[15] = $shortrealtobits(6);
-    mem[29:16] = $shortrealtobits(0);
+    mem[16] = $shortrealtobits(1);
+    mem[17] = $shortrealtobits(2);
+    mem[18] = $shortrealtobits(3);
+    mem[19] = $shortrealtobits(4);
+    mem[20] = $shortrealtobits(5);
+    mem[21] = $shortrealtobits(6);
+    mem[29:22] = $shortrealtobits(0);
     mem[30] = $shortrealtobits(10);
     mem[31] = $shortrealtobits(12);
     mem[32] = $shortrealtobits(14);
     mem[33] = $shortrealtobits(16);
     mem[34] = $shortrealtobits(18);
     mem[35] = $shortrealtobits(20);
-    mem[63:36] = $shortrealtobits(0);
+    mem[36] = $shortrealtobits(10);
+    mem[37] = $shortrealtobits(12);
+    mem[38] = $shortrealtobits(14);
+    mem[39] = $shortrealtobits(16);
+    mem[40] = $shortrealtobits(18);
+    mem[41] = $shortrealtobits(20);
+    mem[63:42] = $shortrealtobits(0);
   end
 
   always_ff @(posedge clock) begin
