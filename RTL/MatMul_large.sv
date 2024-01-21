@@ -28,7 +28,7 @@ module Mult(
     // io with upper level controller
     input logic clock, reset, MatMul_en,
     input meta_data_t op,
-    output finish,
+    output logic finish,
     // io with memory
     input logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdataA, readdataB,
     output mem_t memA, memB, memC);
@@ -81,6 +81,9 @@ module MultAddr_Driver (
     input logic mult_done,
     input logic [7:0][7:0][`DATA_WIDTH-1:0] mult_out);
     
+    // States
+    enum logic [2:0] {WAIT, SEND, SEND_DUM, SEND_ADD, WRITE} state, nextState;
+
     // Counter Signals
     logic add_start, write_start;
     logic add_done, write_done, block_done, total_done;
@@ -88,32 +91,30 @@ module MultAddr_Driver (
 
     // Internal registers
     logic [7:0][7:0][`DATA_WIDTH-1:0] temp_mat, acc_mat;
-    logic [7:0] block_count;
 
     // adder combinational output
     logic [7:0][7:0][`DATA_WIDTH-1:0] add_mat;
 
     block_dim_t dim_b;
 
+    always_comb begin
+        dim_b.dimA1 = (op.dimA1 >> 3);
+        dim_b.dimA2 = (op.dimA2 >> 3);
+        dim_b.dimB1 = (op.dimB1 >> 3);
+        dim_b.dimB2 = (op.dimB2 >> 3);
+        dim_b.block_count = (op.dimA2 >> 3);
+        dim_b.total_count = (op.dimA1 >> 3) * (op.dimB2 >> 3);
+    end
+
     // Register loading
     always_ff @(posedge clock, posedge reset) begin
         if(reset) begin
             temp_mat <= 0;
             acc_mat <= 0;
-            dim_b <= 0;
         end
         else if(clear) begin
             temp_mat <= 0;
             acc_mat <= 0;
-            dim_b <= 0;
-        end
-        else if (MatMul_en) begin
-            dim_b.dimA1 <= (op.dimA1 >> 3);
-            dim_b.dimA2 <= (op.dimA2 >> 3);
-            dim_b.dimB1 <= (op.dimB1 >> 3);
-            dim_b.dimB2 <= (op.dimB2 >> 3);
-            dim_b.block_count <= (op.dimA2 >> 3);
-            dim_b.total_count <= (op.dimA1 >> 3) * (op.dimB2 >> 3);
         end
         else begin
             if(mult_done) begin
@@ -161,7 +162,7 @@ module MultAddr_Driver (
                 add_en <= 1;
             end
             else if(add_en) begin
-                if (add_i == 3'd6) add_en <= 0;
+                if (add_i == 3'd7) add_en <= 0;
                 add_i <= add_i + 1;
             end
         end
@@ -178,20 +179,20 @@ module MultAddr_Driver (
         if(reset) mat_index <= 0;
         else if (clear) mat_index <= 0;
         else begin
-            if (block_done) begin
+            if (state == SEND_DUM && block_done) begin
                 mat_index.Ai <=  mat_index.Ai + 1;
                 mat_index.Bj <=  mat_index.Bj + 1;
                 mat_index.Aj <=  0;
+                mat_index.total_i <= mat_index.total_i + 1;
             end
             else if(mult_done) begin
                 mat_index.Aj <=  mat_index.Aj + 1;
-                mat_index.total_i <= mat_index.total_i + 1;
             end
         end
     end
 
-    assign base_A = `DATAA_ADDR + (mat_index.Ai * dim_b.block_count) + mat_index.Aj;
-    assign base_B = `DATAB_ADDR + (mat_index.Aj * dim_b.block_count) + mat_index.Bj;
+    assign base_A = `DATAA_ADDR + (mat_index.Ai * dim_b.block_count) << 3 + mat_index.Aj;
+    assign base_B = `DATAB_ADDR + (mat_index.Aj * dim_b.block_count) << 3 + mat_index.Bj;
     
     // Writing fsm
     logic [`ADDR_WIDTH-1:0] base_C;
@@ -212,14 +213,14 @@ module MultAddr_Driver (
                 write_i <= 0;
                 write <= 1;
                 addr <= base_C;
-                writedata <= acc_mat[0];
+                writedata <= add_mat[0];
             end
             else if(write) begin
                 if (write_i == 4'd7) begin
                     write <= 0;
                 end
                 addr <= base_C + write_i * dim_b.block_count;
-                writedata <= acc_mat[write_i + 1];
+                writedata <= add_mat[write_i + 1];
                 write_i <= write_i + 1;
             end
         end
@@ -227,13 +228,19 @@ module MultAddr_Driver (
 
 
     // FSM
-    enum logic [2:0] {WAIT, SEND, SEND_ADD, WRITE} state, nextState;
   
     always_ff @(posedge clock, posedge reset) begin
         if (reset) state <= WAIT;
         else begin
             state <= nextState;
           end
+    end
+
+    logic block_done_fsm;
+    always_ff @(posedge clock) begin
+        if (reset) block_done_fsm <= 0;
+        else if (state == SEND_DUM && block_done) block_done_fsm <= 1;
+        else if (state == SEND_ADD && add_done)  block_done_fsm <= 0;
     end
 
     always_comb begin
@@ -252,17 +259,20 @@ module MultAddr_Driver (
           end
           SEND: begin
             if (mult_done)  begin 
-                nextState = SEND_ADD;
-                mult_start = 1'b1;
+                nextState = SEND_DUM;
                 add_start = 1'b1;
             end
             else nextState = SEND;
+          end
+          SEND_DUM: begin
+                nextState = SEND_ADD;
+                if (!total_done) mult_start = 1'b1;
           end
           SEND_ADD: begin
             if (add_done) begin 
                 nextState = SEND;
                 // assume block_done is always asserted when total_done
-                if (block_done) write_start = 1'b1;
+                if (block_done_fsm) write_start = 1'b1;
                 if (total_done) nextState = WRITE;
             end
             else nextState = SEND_ADD;
@@ -278,3 +288,80 @@ module MultAddr_Driver (
         endcase
       end
 endmodule
+
+module fakememA
+  (input logic read, clock, 
+   input logic [`ADDR_WIDTH-1:0] read_addr,
+   output logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] data);
+
+  logic [1023:0][31:0] mem;
+
+  assign mem[255:0] = {$shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(3), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(8), $shortrealtobits(5), $shortrealtobits(7), $shortrealtobits(4), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(8), $shortrealtobits(7), $shortrealtobits(5), $shortrealtobits(7), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(9), $shortrealtobits(4), $shortrealtobits(5), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(7), $shortrealtobits(4), $shortrealtobits(5), $shortrealtobits(3), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(3), $shortrealtobits(6), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(4), $shortrealtobits(2), $shortrealtobits(1), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(6), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(4), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(3), $shortrealtobits(9), $shortrealtobits(7), $shortrealtobits(9), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(1), $shortrealtobits(7), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(5), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(7), $shortrealtobits(5), $shortrealtobits(9), $shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(9), $shortrealtobits(7), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(1), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(6), $shortrealtobits(2), $shortrealtobits(7), $shortrealtobits(2), $shortrealtobits(1), $shortrealtobits(4), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(3), $shortrealtobits(7), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(6), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(8), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(6), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(6), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(2), $shortrealtobits(5), $shortrealtobits(1), $shortrealtobits(3), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(9), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(4), $shortrealtobits(5), $shortrealtobits(1), $shortrealtobits(3), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(5), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(3), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(3), $shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(4), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(4), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(9), $shortrealtobits(4), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(9), $shortrealtobits(5), $shortrealtobits(8), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(5), $shortrealtobits(4), $shortrealtobits(4), $shortrealtobits(9), $shortrealtobits(5), $shortrealtobits(2), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(5), $shortrealtobits(7), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(3), $shortrealtobits(4), $shortrealtobits(9), $shortrealtobits(1), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(5), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(7), $shortrealtobits(4), $shortrealtobits(2), $shortrealtobits(6), $shortrealtobits(6), $shortrealtobits(6), $shortrealtobits(8), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(2), $shortrealtobits(6), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(5), $shortrealtobits(4), $shortrealtobits(5), $shortrealtobits(7), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(7), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(9), $shortrealtobits(8), $shortrealtobits(5)};
+  //assign mem[133:70] = {$shortrealtobits(7), $shortrealtobits(7), $shortrealtobits(2), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(5), $shortrealtobits(5), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(8), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(4), $shortrealtobits(2), $shortrealtobits(7), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(4), $shortrealtobits(9), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(7), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(5), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(4)};
+
+  always_ff @(posedge clock) begin
+    if (read) data <= {mem[read_addr+7], mem[read_addr+6], mem[read_addr+5], mem[read_addr+4],
+                       mem[read_addr+3], mem[read_addr+2], mem[read_addr+1], mem[read_addr]};
+    else data <= 'b0;
+  end
+endmodule: fakememA
+
+module fakememB
+  (input logic read, clock, 
+   input logic [`ADDR_WIDTH-1:0] read_addr,
+   output logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] data);
+
+  logic [1023:0][31:0] mem;
+
+  //assign mem[63:0] = {$shortrealtobits(3), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(2), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(3), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(1), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(9), $shortrealtobits(9), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(8), $shortrealtobits(2), $shortrealtobits(7), $shortrealtobits(5), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(2), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(6), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(5), $shortrealtobits(5), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(3), $shortrealtobits(6), $shortrealtobits(3), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(5)};
+  assign mem[255:0] = {$shortrealtobits(9), $shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(3), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(5), $shortrealtobits(8), $shortrealtobits(7), $shortrealtobits(5), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(6), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(5), $shortrealtobits(3), $shortrealtobits(7), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(7), $shortrealtobits(7), $shortrealtobits(3), $shortrealtobits(3), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(5), $shortrealtobits(3), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(9), $shortrealtobits(5), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(6), $shortrealtobits(2), $shortrealtobits(4), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(5), $shortrealtobits(3), $shortrealtobits(4), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(5), $shortrealtobits(6), $shortrealtobits(9), $shortrealtobits(6), $shortrealtobits(3), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(3), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(5), $shortrealtobits(3), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(5), $shortrealtobits(3), $shortrealtobits(9), $shortrealtobits(9), $shortrealtobits(8), $shortrealtobits(9), $shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(3), $shortrealtobits(6), $shortrealtobits(7), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(3), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(5), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(5), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(4), $shortrealtobits(3), $shortrealtobits(6), $shortrealtobits(5), $shortrealtobits(2), $shortrealtobits(1), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(9), $shortrealtobits(9), $shortrealtobits(9), $shortrealtobits(8), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(6), $shortrealtobits(2), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(1), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(6), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(5), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(6), $shortrealtobits(3), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(6), $shortrealtobits(6), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(8), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(5), $shortrealtobits(7), $shortrealtobits(4), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(8), $shortrealtobits(9), $shortrealtobits(7), $shortrealtobits(5), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(7), $shortrealtobits(5), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(3), $shortrealtobits(3), $shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(5), $shortrealtobits(4), $shortrealtobits(8), $shortrealtobits(2), $shortrealtobits(7), $shortrealtobits(4), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(5), $shortrealtobits(9), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(9), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(9), $shortrealtobits(7), $shortrealtobits(5), $shortrealtobits(7), $shortrealtobits(5), $shortrealtobits(9), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(6), $shortrealtobits(9), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(4), $shortrealtobits(2)};
+
+  always_ff @(posedge clock) begin
+    if (read) data <= {mem[read_addr+7], mem[read_addr+6], mem[read_addr+5], mem[read_addr+4],
+                       mem[read_addr+3], mem[read_addr+2], mem[read_addr+1], mem[read_addr]};
+    else data <= 'b0;
+  end
+endmodule: fakememB
+
+module SystolicArray_TB;
+
+    // io with upper level controller
+    logic clock, reset, MatMul_en;
+    meta_data_t op;
+    logic finish;
+    // io with memory
+    logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdataA, readdataB;
+    mem_t memA, memB, memC;
+
+    Mult DUT(.*);
+
+    fakememA FA(.read(memA.read), .clock, .data(readdataA), .read_addr(memA.address*8));
+    fakememB FB(.read(memB.read), .clock, .data(readdataB), .read_addr(memB.address*8));
+
+    initial begin
+        clock = 1'b0;
+        forever #5 clock = ~clock;
+    end
+  
+    initial begin
+        reset <= 1;
+        @(posedge clock)
+        reset <= 0;
+        MatMul_en <= 1;
+        op.op_code <= MAT_MUL;
+        op.dimA1 <= 16;
+        op.dimA2 <= 16;
+        op.dimB1 <= 16;
+        op.dimB2 <= 16;
+        @(posedge clock)
+        MatMul_en <= 0;
+        @(posedge clock)
+        //#2150
+        //#10000
+        
+        @(posedge finish)
+        @(posedge clock)
+        $finish;
+    end
+
+endmodule: SystolicArray_TB

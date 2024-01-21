@@ -134,7 +134,7 @@ module SystolicArray_Driver
       end
       DONE: begin
         nextState = WAIT;
-        done <= 'b1;
+        done = 'b1;
       end
     endcase
   end
