@@ -115,7 +115,7 @@ int main() {
 		close( fd );
 		return( 1 );
 	}
-	if( munmap( fpga_mem_base, FPGA_MEM_SPAN ) != 0 ) {
+	if( munmap( fpga_mem_base, H2F_AXI_SPAN ) != 0 ) {
 		printf( "ERROR: munmap() failed...\n" );
 		close( fd );
 		return( 1 );
