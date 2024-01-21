@@ -35,6 +35,7 @@ int main() {
 	// void *Mat_B_Base;
 	void *Mat_C_Base;
 	uint32_t Instruction;
+	int i;
 	printf("Hello\n");
 	// map the address space for the LED registers into user space so we can interact with them.
 	// we'll actually map in the entire CSR span of the HPS since we want to access various registers within that span
@@ -71,15 +72,20 @@ int main() {
 	float mat_a[] = {1.0, 2.0, 3.0, 4.0};
 	float scalar = 2.0;
 	memcpy(Mat_A_Base, &mat_a, sizeof(float) * 4);
-	memcpy(fpga_mem_base + sizeof(float), &scalar, sizeof(float));
+	for (i = 0; i < 4; i++) {
+		printf("%f\n", *(float *)Mat_A_Base[i]);
+	}
+	memcpy(instruction_base + sizeof(float), &scalar, sizeof(float));
+	printf ("%d\n", *(uint32_t *)(instruction_base + sizeof(float)));
 	*(uint32_t *)instruction_base = Instruction;
+	printf ("%d\n", *(uint32_t *)instruction_base);
 	while ( *(uint32_t *)instruction_base != 0x0000u) {
 		usleep( 1*1000 );
 	}
 	float mat_res[4];
 	memcpy(&mat_res, Mat_C_Base, sizeof(float) * 4);
 
-	int i;
+	
 	for (i = 0; i < 4; i++) {
 		printf("%f\n", mat_res[i]);
 	}
