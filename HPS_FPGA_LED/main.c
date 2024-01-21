@@ -20,7 +20,7 @@ refer to user manual chapter 7 for details about the demo
 #define HW_REGS_SPAN ( 0x04000000 )
 #define H2F_AXI_BASE ( 0xC0000000 )
 #define H2F_AXI_SPAN ( 0x00100000 )
-#define H2F_AXI_MASK (H2F_AXI_SPAN - 1 )
+#define H2F_AXI_MASK ( H2F_AXI_SPAN - 1 )
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
 int main() {
@@ -55,7 +55,7 @@ int main() {
 	h2p_lw_led_addr = instruction_base + ( ( unsigned long )( ALT_LWFPGASLVS_OFST + LED_PIO_BASE ) & ( unsigned long)( HW_REGS_MASK ) );
 
 	// h2f_axi_bridge
-	fpga_mem_base = mmap( NULL, FPGA_MEM_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, H2F_AXI_BASE );
+	fpga_mem_base = mmap( NULL, H2F_AXI_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, H2F_AXI_BASE );
 
 	if( fpga_mem_base == MAP_FAILED ) {
 		printf( "ERROR: mmap() failed...\n" );
@@ -78,8 +78,8 @@ int main() {
 	}
 	float mat_res[4];
 	memcpy(&mat_res, Mat_C_Base, sizeof(float) * 4);
-
-	for (int i = 0; i < 4; i++) {
+	int i;
+	for (i = 0; i < 4; i++) {
 		printf("%f\n", mat_res[i]);
 	}
 	
