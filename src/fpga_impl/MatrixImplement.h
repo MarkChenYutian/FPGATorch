@@ -21,7 +21,8 @@
 #endif
 
 // This is the maximum amount we can handle
-constexpr size_t FPGA_MAX_SIZE = 128 * 128;
+constexpr int FPGA_MAX_SIZE_SQRT = 128;
+constexpr size_t FPGA_MAX_SIZE = FPGA_MAX_SIZE_SQRT * FPGA_MAX_SIZE_SQRT;
 
 // This is the minimum amount we should use FPGA since the communication overhead is too high
 // TODO: This value need further tuning
@@ -61,18 +62,16 @@ void MatFree(Tensor_t *mat) {
     delete mat;
 }
 
-float Get(const SmartTensor& A, int dim0, int dim1, int dim2) {
-    int offset0 = dim0 * A->size[1] * A->size[2];
-    int offset1 = dim1 * A->size[2];
-    int offset2 = dim2;
-    return A->data[offset0 + offset1 + offset2];
+inline int GetIndex(const SmartTensor& A, int dim0, int dim1, int dim2) {
+    return (dim0 * A->size[1] * A->size[2]) + (dim1 * A->size[2]) + dim2;
 }
 
-void  Set(const SmartTensor& A, int dim0, int dim1, int dim2, float value) {
-    int offset0 = dim0 * A->size[1] * A->size[2];
-    int offset1 = dim1 * A->size[2];
-    int offset2 = dim2;
-    A->data[offset0 + offset1 + offset2] = value;
+inline float Get(const SmartTensor& A, int dim0, int dim1, int dim2) {
+    return A->data[GetIndex(A, dim0, dim1, dim2)];
+}
+
+inline void  Set(const SmartTensor& A, int dim0, int dim1, int dim2, float value) {
+    A->data[GetIndex(A, dim0, dim1, dim2)] = value;
 }
 
 SmartTensor MatAdd(const SmartTensor& A, const SmartTensor& B) {
@@ -210,25 +209,106 @@ SmartTensor ScalarMatLog(const SmartTensor& A) {
     return result;
 }
 
-SmartTensor MatMul(const SmartTensor& A, const SmartTensor& B) {
-    // B, N, M @ B, M, K -> B, N, K
-    DBG_ASSERT(A->size[0] == B->size[0]);
-    DBG_ASSERT(A->size[2] == B->size[1]);
-    SmartTensor C = MatNew(A->size[0], A->size[1], B->size[2]);
+// Efficiently blockify a matrix (extract a submatrix)
+// Only support on dim1 and dim2
+// [dim1_min, dim1_max) [dim2_min, dim2_max)
+SmartTensor Mat_BlockIndexing(const SmartTensor &A, int dim1_min, int dim1_max, int dim2_min, int dim2_max) {
+    assert(dim1_min >= 0 && dim1_max <= A->size[1] && dim1_min < dim1_max);
+    assert(dim2_min >= 0 && dim2_max <= A->size[2] && dim2_min < dim2_max);
+    SmartTensor result = MatNew(A->size[0], dim1_max - dim1_min, dim2_max - dim2_min);
 
-    for (int p = 0; p < A->size[0]; p ++) {
-        for (int q = 0; q < A->size[1]; q ++) {
-            for (int r = 0; r < B->size[2]; r ++) {
-                float result = 0;
-                for (int s = 0; s < A->size[2]; s++) {
-                    float valueA = Get(A, p, q, s);
-                    float valueB = Get(B, p, s, r);
-                    result += valueA * valueB;
-                }
-                Set(C, p, q, r, result);
-            }
+    int dim1_range = dim1_max - dim1_min;
+    int dim2_range = dim2_max - dim2_min;
+
+    for (int i = 0; i < A->size[0]; i ++) {
+        for (int j = 0; j < dim1_range; j ++) {
+            float *dstBegin = &(result->data[GetIndex(result, i, j, 0)]);
+            float *srcBegin = &(A->data[GetIndex(A, i, j + dim1_min, dim2_min)]);
+            std::memcpy(dstBegin, srcBegin, sizeof(float) * dim2_range);
         }
     }
+
+    return result;
+}
+
+void Mat_BlockWriteback(const SmartTensor &dst, const SmartTensor &blk, int dim1_min, int dim1_max, int dim2_min, int dim2_max) {
+    assert(dim1_min >= 0 && dim1_max <= dst->size[1] && dim1_min < dim1_max);
+    assert(dim2_min >= 0 && dim2_max <= dst->size[2] && dim2_min < dim2_max);
+    assert(dim1_max - dim1_min == blk->size[1]);
+    assert(dim2_max - dim2_min == blk->size[2]);
+
+    int dim1_range = dim1_max - dim1_min;
+    int dim2_range = dim2_max - dim2_min;
+
+    for (int i = 0; i < dst->size[0]; i ++) {
+        for (int j = 0; j < dim1_range; j ++) {
+            float *dstBegin = &(dst->data[GetIndex(dst, i, j + dim1_min, dim2_min)]);
+            float *srcBegin = &(blk->data[GetIndex(blk, i, j, 0)]);
+            std::memcpy(dstBegin, srcBegin, sizeof(float) * dim2_range);
+        }
+    }
+}
+
+SmartTensor MatMul(const SmartTensor& A, const SmartTensor& B) {
+    // B, N, M @ B, M, K -> B, N, K
+    assert(A->size[0] == B->size[0]);
+    assert(A->size[2] == B->size[1]);
+
+    SmartTensor C = MatNew(A->size[0], A->size[1], B->size[2]);
+    // std::vector<size_t> A_blk_size1, A_blk_size2, B_blk_size1, B_blk_size2, C_blk_size1, C_blk_size2;
+    size_t A_blk_dim1 = (A->size[1] + FPGA_MAX_SIZE_SQRT - 1) / FPGA_MAX_SIZE_SQRT,
+           A_blk_dim2 = (A->size[2] + FPGA_MAX_SIZE_SQRT - 1) / FPGA_MAX_SIZE_SQRT,
+           B_blk_dim1 = (B->size[1] + FPGA_MAX_SIZE_SQRT - 1) / FPGA_MAX_SIZE_SQRT,
+           B_blk_dim2 = (B->size[2] + FPGA_MAX_SIZE_SQRT - 1) / FPGA_MAX_SIZE_SQRT,
+           C_blk_dim1 = (C->size[1] + FPGA_MAX_SIZE_SQRT - 1) / FPGA_MAX_SIZE_SQRT,
+           C_blk_dim2 = (C->size[2] + FPGA_MAX_SIZE_SQRT - 1) / FPGA_MAX_SIZE_SQRT;
+    
+    std::vector<SmartTensor> A_blk, B_blk, C_blk;
+
+    // Blockify A
+    for (int i = 0; i < A->size[1]; i += FPGA_MAX_SIZE_SQRT) {
+        int blk_size1 = std::min(FPGA_MAX_SIZE_SQRT, A->size[1] - i);
+        for (int j = 0; j < A->size[2]; j += FPGA_MAX_SIZE_SQRT) {
+            int blk_size2 = std::min(FPGA_MAX_SIZE_SQRT, A->size[2] - j);
+            A_blk.push_back(Mat_BlockIndexing(A, i, i + blk_size1, j, j + blk_size2));
+        }
+    }
+
+    // Blockify B
+    for (int i = 0; i < B->size[1]; i += FPGA_MAX_SIZE_SQRT) {
+        int blk_size1 = std::min(FPGA_MAX_SIZE_SQRT, B->size[1] - i);
+        for (int j = 0; j < B->size[2]; j += FPGA_MAX_SIZE_SQRT) {
+            int blk_size2 = std::min(FPGA_MAX_SIZE_SQRT, B->size[2] - j);
+            B_blk.push_back(Mat_BlockIndexing(B, i, i + blk_size1, j, j + blk_size2));
+        }
+    }
+
+    // Blocked matrix multiplication
+    for (int A_blk_idx1 = 0; A_blk_idx1 < A_blk_dim1; A_blk_idx1 ++) {
+        for (int B_blk_idx2 = 0; B_blk_idx2 < B_blk_dim2; B_blk_idx2 ++) {
+            int c_dim0 = A->size[0], 
+                c_dim1 = A_blk[A_blk_idx1 * A_blk_dim2]->size[1], 
+                c_dim2 = B_blk[B_blk_idx2]->size[2];
+            
+            SmartTensor C_submat     = MatNew(c_dim0, c_dim1, c_dim2);
+
+            for (int A_blk_idx2 = 0; A_blk_idx2 < A_blk_dim2; A_blk_idx2 ++) {
+                SmartTensor A_submat = A_blk[A_blk_idx1 * A_blk_dim2 + A_blk_idx2];
+                SmartTensor B_submat = B_blk[A_blk_idx2 * B_blk_dim2 + B_blk_idx2];
+
+                SmartTensor C_submat_tmp = MatMul128x128(A_submat, B_submat);
+                MatAdd128x128(&(C_submat->data[0]), &(C_submat_tmp->data[0]), &(C_submat->data[0]), c_dim0*c_dim1*c_dim2);
+            }
+
+            // Writeback
+            Mat_BlockWriteback(
+                C, C_submat, 
+                A_blk_idx1 * FPGA_MAX_SIZE_SQRT, std::min((A_blk_idx1 + 1) * FPGA_MAX_SIZE_SQRT, C->size[1]),
+                B_blk_idx2 * FPGA_MAX_SIZE_SQRT, std::min((B_blk_idx2 + 1) * FPGA_MAX_SIZE_SQRT, C->size[2])
+            );
+        }
+    }
+
     return C;
 }
 
