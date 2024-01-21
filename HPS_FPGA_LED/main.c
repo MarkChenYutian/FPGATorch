@@ -24,6 +24,7 @@ refer to user manual chapter 7 for details about the demo
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
 int main() {
+	void *virtual_base;
 	void *instruction_base;
 	void *fpga_mem_base;
 	int fd;
@@ -46,14 +47,15 @@ int main() {
 	}
 
 	// h2f_lw_axi_bridge
-	instruction_base = mmap( NULL, HW_REGS_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, HW_REGS_BASE + ALT_LWFPGASLVS_OFST);
+	virtual_base = mmap( NULL, HW_REGS_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, HW_REGS_BASE );
 	
-	if( instruction_base == MAP_FAILED ) {
+	if( virtual_base == MAP_FAILED ) {
 		printf( "ERROR: mmap() failed...\n" );
 		close( fd );
 		return( 1 );
 	}
-	h2p_lw_led_addr = instruction_base + ( ( unsigned long )(LED_PIO_BASE ) & ( unsigned long)( HW_REGS_MASK ) );
+	instruction_base = virtual_base + ( ( unsigned long )(ALT_LWFPGASLVS_OFST ) & ( unsigned long)( HW_REGS_MASK ) );
+	h2p_lw_led_addr = virtual_base + ( ( unsigned long )(LED_PIO_BASE + ALT_LWFPGASLVS_OFST ) & ( unsigned long)( HW_REGS_MASK ) );
 
 	// h2f_axi_bridge
 	fpga_mem_base = mmap( NULL, H2F_AXI_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, H2F_AXI_BASE );
@@ -82,9 +84,12 @@ int main() {
 	memcpy(instruction_base + sizeof(float), &scalar, sizeof(float));
 	printf ("%f\n", *(float *)(instruction_base + sizeof(float)));
 	usleep( 1*1000 );
-	while ( *(uint32_t *)instruction_base != 0x00000000u) {
-		usleep( 1*1000 );
-		printf ("waiting: %x\n", *(uint32_t *)instruction_base);
+	while ( *(uint32_t *)instruction_base != 0x00000000) {
+		usleep( 100*1000 );
+		printf ("waiting: %x\n", *(uint32_t *)(instruction_base));
+		for (i = 0; i < 4; i++) {
+		printf("%f\n", ((float *)Mat_C_Base)[i]);
+		}
 	}
 	float mat_res[4];
 	memcpy(&mat_res, Mat_C_Base, sizeof(float) * 4);
