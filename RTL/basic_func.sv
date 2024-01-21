@@ -18,6 +18,7 @@ module FSM
   (input logic clock, reset,
    input meta_data_t meta_data,
    input logic [`SINGLE_ACCESS-1:0][`DATA_WIDTH*`BANDWIDTH-1:0] dataRes,
+   output op_code_t op_code,
    output logic [`ADDR_WIDTH-1:0] mem_addr_op, mem_addr_A, mem_addr_B, mem_addr_Res,
    output logic [`DATA_WIDTH*`BANDWIDTH-1:0] mem_data_op, mem_data_Res,
    output logic read_op, read_A, read_B, write_op, write_Res,
@@ -38,7 +39,6 @@ module FSM
 
   Counter #(`CYCLE_WIDTH, 1) compute (.D(0), .en(op_compute), .clear(reset), .load(next_block | idle), .clock, .up(1'b1), .Q(op_count));
 
-  logic [`OP_WIDTH-1:0] op_code;
   logic [`DIM_WIDTH-1:0] dimA1, dimA2, dimB1, dimB2;
 
   Register #(`OP_WIDTH) reg_op (.D(meta_data.op_code), .en(save_op), .clear(idle), .clock, .Q(op_code));
@@ -47,7 +47,7 @@ module FSM
   Register #(`DIM_WIDTH) reg_dimB1 (.D(meta_data.dimB1), .en(save_op), .clear(idle), .clock, .Q(dimB1));
   Register #(`DIM_WIDTH) reg_dimB2 (.D(meta_data.dimB2), .en(save_op), .clear(idle), .clock, .Q(dimB2));
 
-  assign dim_total = (dimA1 / 4) * (dimA2 / 4);
+  assign dim_total = (dimA1 / `BANDWIDTH) * (dimA2 / `BANDWIDTH);
 
   always_comb begin
     case (op_code)
@@ -179,9 +179,11 @@ module MatMem
 
   meta_data_t meta_data;
   logic [`SINGLE_ACCESS-1:0][`DATA_WIDTH*`BANDWIDTH-1:0] dataA_reg, dataB_reg, dataRes, dataRes_reg;
+  op_code_t op_code;
   logic [`DATA_WIDTH*`BANDWIDTH-1:0] data_op, data_op_reg, dataA, dataB;
+  logic [`DATA_WIDTH-1:0] scalar_reg;
   logic [`ADDR_WIDTH-1:0] mem_addr_op, mem_addr_A, mem_addr_B, mem_addr_Res;
-  logic [`DATA_WIDTH*`BANDWIDTH-1:0] mem_data_op, mem_data_Res, data;
+  logic [`DATA_WIDTH*`BANDWIDTH-1:0] mem_data_op, mem_data_Res;
   logic read_op, read_A, read_B, write_op, write_Res;
   logic idle, save_op, save_scalar, save_Res;
   logic [`SINGLE_ACCESS-1:0] save_A, save_B;
@@ -196,7 +198,7 @@ module MatMem
   fakemem memop (.clock, .read(read_op), .write(write_op), .address(mem_addr_op), .writedata(mem_data_op), .readdata(data_op));
   fakemem memRes (.clock, .read(), .write(write_Res), .address(mem_addr_Res), .writedata(mem_data_Res), .readdata());
 
-  Register #(`DATA_WIDTH*`BANDWIDTH) reg_scalar (.D(data_op), .en(save_scalar), .clear(idle), .clock, .Q(data_op_reg));
+  Register #(`DATA_WIDTH*`BANDWIDTH) reg_scalar (.D(data_op), .en(save_scalar), .clear(idle), .clock, .Q(scalar_reg));
 
   genvar i, j;
   generate
@@ -208,7 +210,9 @@ module MatMem
 
       for (j = 0; j < `BANDWIDTH; j = j + 1)
       begin : multiple_bandwidth
-        MatAdd add (.clock, .reset, .dataA(dataA_reg[i][`DATA_WIDTH*(j+1) : `DATA_WIDTH*j]), .dataB(dataB_reg[i][`DATA_WIDTH*(j+1) : `DATA_WIDTH*j]), .dataC(dataRes[i][`DATA_WIDTH*(j+1) : `DATA_WIDTH*j]));
+        MatAdd add (.clock, .reset, .dataA(dataA_reg[i][`DATA_WIDTH*(j+1)-1 : `DATA_WIDTH*j]),
+                    .dataB((op_code == MAT_ADD) ? dataB_reg[i][`DATA_WIDTH*(j+1)-1 : `DATA_WIDTH*j] : scalar_reg),
+                    .dataC(dataRes[i][`DATA_WIDTH*(j+1)-1 : `DATA_WIDTH*j]));
       end : multiple_bandwidth
     end : multiple_reg
   endgenerate

@@ -30,10 +30,10 @@ endmodule: M10K
 module fakemem
   (input logic read, write, clock, 
    input logic [`ADDR_WIDTH-1:0] address,
-   input logic [`DATA_WIDTH-1:0] writedata,
-   output logic [`DATA_WIDTH-1:0] readdata);
+   input logic [`DATA_WIDTH*`BANDWIDTH-1:0] writedata,
+   output logic [`DATA_WIDTH*`BANDWIDTH-1:0] readdata);
 
-  logic [63:0][31:0] mem;
+  logic [63:0][255:0] mem;
 
   always_comb begin
     mem[0] = {4'd1, 7'd16, 7'd12, 7'd16, 7'd12};
@@ -52,9 +52,9 @@ module fakemem
     // mem[63:34] = (0);
     mem[1] = $shortrealtobits(5);
     mem[9:2] = $shortrealtobits(0);
-    mem[10] = $shortrealtobits(1);
-    mem[11] = $shortrealtobits(2);
-    mem[12] = $shortrealtobits(3);
+    mem[10] = {$shortrealtobits(32'd1), $shortrealtobits(32'd17), $shortrealtobits(32'd18), $shortrealtobits(32'd19)};
+    mem[11] = {$shortrealtobits(32'd2), $shortrealtobits(32'd27), $shortrealtobits(32'd28), $shortrealtobits(32'd29)};
+    mem[12] = {$shortrealtobits(32'd3), $shortrealtobits(32'd37), $shortrealtobits(32'd38), $shortrealtobits(32'd39)};
     mem[13] = $shortrealtobits(4);
     mem[14] = $shortrealtobits(5);
     mem[15] = $shortrealtobits(6);
