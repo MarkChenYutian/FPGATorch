@@ -1,5 +1,11 @@
 #include "MatrixInterface.h"
-#include "cpu_impl/MatrixImplement.h"
+#ifdef ONFPGA
+  #include "fpga_impl/MatrixImplement.h"
+  #include "fpga_impl/FPGAInterface.h"
+#else
+  #include "cpu_impl/MatrixImplement.h"
+#endif
+
 #include "operator/Operator.h"
 #include "optim/SGDOptimizer.h"
 #include "CSVDataset.h"
@@ -11,6 +17,10 @@ void loadModel(Neural::Sequential network) {
 }
 
 int main() {
+#ifdef ONFPGA
+      MMap_Init();
+#endif
+
     auto dataset = CSVDataset("../value.csv", "../label.csv");
 
     auto layer1 = Neural::Linear(1, 784, 128);

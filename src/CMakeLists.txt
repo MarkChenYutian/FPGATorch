@@ -16,10 +16,30 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
 
 # FPGA specific variables
 set(ALT_DEVICE_FAMILY soc_cv_av)
-set(SOCEDS_ROOT $ENV{SOCEDS_DEST_ROOT})
+set(SOCEDS_ROOT /home/yutian/intelFPGA/19.1/embedded)
 set(HWLIBS_ROOT ${SOCEDS_ROOT}/ip/altera/hps/altera_hps/hwlib)
 
 add_executable(FPGATorch
+        MatrixInterface.h
+
+        fpga_impl/MatrixImplement.h
+        fpga_impl/FPGAInterface.h
+
+        operator/Linear.h
+        operator/SquareLoss.h
+        operator/Operator.h
+        operator/Module.h
+        operator/Sequential.h
+        operator/ReLU.h
+        operator/XEntropy.h
+
+        optim/SGDOptimizer.h
+        example-app.cpp
+        CSVDataset.h
+        Utility.h
+        hps_0.h
+)
+add_executable(CPUTorch
         MatrixInterface.h
 
         cpu_impl/MatrixImplement.h
@@ -43,4 +63,8 @@ add_executable(FPGATorch
 target_include_directories(FPGATorch PUBLIC ${HWLIBS_ROOT}/include/${ALT_DEVICE_FAMILY})
 target_include_directories(FPGATorch PUBLIC ${HWLIBS_ROOT}/include/)
 set_property(TARGET FPGATorch PROPERTY CXX_STANDARD 11)
+set_property(TARGET CPUTorch PROPERTY CXX_STANDARD 11)
+
+target_compile_definitions(FPGATorch PUBLIC ONFPGA)
+target_compile_definitions(FPGATorch PUBLIC ${ALT_DEVICE_FAMILY})
 
