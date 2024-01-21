@@ -46,14 +46,14 @@ int main() {
 	}
 
 	// h2f_lw_axi_bridge
-	instruction_base = mmap( NULL, HW_REGS_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, HW_REGS_BASE );
+	instruction_base = mmap( NULL, HW_REGS_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, HW_REGS_BASE + ALT_LWFPGASLVS_OFST);
 	
 	if( instruction_base == MAP_FAILED ) {
 		printf( "ERROR: mmap() failed...\n" );
 		close( fd );
 		return( 1 );
 	}
-	h2p_lw_led_addr = instruction_base + ( ( unsigned long )( ALT_LWFPGASLVS_OFST + LED_PIO_BASE ) & ( unsigned long)( HW_REGS_MASK ) );
+	h2p_lw_led_addr = instruction_base + ( ( unsigned long )(LED_PIO_BASE ) & ( unsigned long)( HW_REGS_MASK ) );
 
 	// h2f_axi_bridge
 	fpga_mem_base = mmap( NULL, H2F_AXI_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, H2F_AXI_BASE );
@@ -73,19 +73,24 @@ int main() {
 	float scalar = 2.0;
 	memcpy(Mat_A_Base, &mat_a, sizeof(float) * 4);
 	for (i = 0; i < 4; i++) {
-		printf("%f\n", *(float *)Mat_A_Base[i]);
+		printf("%f\n", ((float *)Mat_A_Base)[i]);
 	}
-	memcpy(instruction_base + sizeof(float), &scalar, sizeof(float));
-	printf ("%d\n", *(uint32_t *)(instruction_base + sizeof(float)));
+	printf("%x\n", (uint32_t)Instruction);
 	*(uint32_t *)instruction_base = Instruction;
-	printf ("%d\n", *(uint32_t *)instruction_base);
-	while ( *(uint32_t *)instruction_base != 0x0000u) {
+	printf ("%x\n", *(uint32_t *)instruction_base);
+
+	memcpy(instruction_base + sizeof(float), &scalar, sizeof(float));
+	printf ("%f\n", *(float *)(instruction_base + sizeof(float)));
+	usleep( 1*1000 );
+	while ( *(uint32_t *)instruction_base != 0x00000000u) {
 		usleep( 1*1000 );
+		printf ("waiting: %x\n", *(uint32_t *)instruction_base);
 	}
 	float mat_res[4];
 	memcpy(&mat_res, Mat_C_Base, sizeof(float) * 4);
-
-	
+	for (i = 0; i < 4; i++) {
+		printf("%f\n", ((float *)Mat_C_Base)[i]);
+	}
 	for (i = 0; i < 4; i++) {
 		printf("%f\n", mat_res[i]);
 	}
