@@ -71,7 +71,7 @@ int main() {
 	float mat_a[] = {1.0, 2.0, 3.0, 4.0};
 	float scalar = 2.0;
 	memcpy(Mat_A_Base, &mat_a, sizeof(float) * 4);
-	memcpy(Mat_B_Base, &scalar, sizeof(float));
+	memcpy(fpga_mem_base + sizeof(float), &scalar, sizeof(float));
 	*(uint32_t *)instruction_base = Instruction;
 	while ( *(uint32_t *)instruction_base != 0x0000u) {
 		usleep( 1*1000 );
