@@ -322,7 +322,7 @@ module fakememB
     else data <= 'b0;
   end
 endmodule: fakememB
-
+/*
 module SystolicArray_TB;
 
     // io with upper level controller
@@ -364,4 +364,4 @@ module SystolicArray_TB;
         $finish;
     end
 
-endmodule: SystolicArray_TB
+endmodule: SystolicArray_TB */
