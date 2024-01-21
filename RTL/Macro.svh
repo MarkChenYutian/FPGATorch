@@ -13,7 +13,7 @@
 
 `define SINGLE_ACCESS 8
 
-`define CYCLE_WIDTH 3
+`define CYCLE_WIDTH 4
 `define CYCLE_MUL 5
 `define CYCLE_DIV 6
 `define CYCLE_ADD 7
@@ -28,8 +28,7 @@ typedef enum logic [`OP_WIDTH-1:0] {
   MAT_SCAL_ADD = 4,
   MAT_SCAL_INV = 5,
   MAT_MUL = 6,
-  MAT_TRAS = 7,
-  REDUCE_SUM = 8
+  MAT_ELE_MUL = 7
 } op_code_t;
 
 typedef struct packed {
