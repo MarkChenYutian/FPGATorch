@@ -1,6 +1,6 @@
 `default_nettype none
 
-`include "parameter.svh"
+`include "Macro.svh"
 
 typedef enum logic [`OP_WIDTH-1:0] {
   NONE = 0,
@@ -70,7 +70,7 @@ module FSM
 
   always_comb begin
     case (op_code)
-      MAT_ADD: op_cycle = `CYCLE_MAT_ADD;
+      MAT_ADD: op_cycle = `CYCLE_ADD;
       MAT_SCAL_MUL: op_cycle = `CYCLE_MUL;
       MAT_SCAL_DIV: op_cycle = `CYCLE_DIV;
       MAT_SCAL_ADD: op_cycle = `CYCLE_ADD;
@@ -97,21 +97,24 @@ module FSM
     save_Res = 1'b0;
     case (state)
       WAIT_OP: begin
-        if (meta_data.op_code == NONE) begin
-          nextState = WAIT_OP;
-          idle = 1'b1;
-          read = 1'b1;
-          mem_addr = `OP_ADDR;
-        end else if (meta_data.op_code == MAT_ADD) begin
-          nextState = READ_A;
-          save_op = 1'b1;
-          read = 1'b1;
-          mem_addr = `DATAA_ADDR + block_ptr + read_ptr;
-        end else begin
+        if ((meta_data.op_code == MAT_SCAL_MUL) ||
+            (meta_data.op_code == MAT_SCAL_DIV) || 
+            (meta_data.op_code == MAT_SCAL_ADD) ||
+            (meta_data.op_code == MAT_SCAL_INV)) begin
           nextState = READ_SCALAR;
           save_op = 1'b1;
           read = 1'b1;
           mem_addr = `SCALAR_ADDR;
+        end else if (meta_data.op_code == MAT_ADD) begin
+          nextState = READ_B;
+          save_op = 1'b1;
+          read = 1'b1;
+          mem_addr = `DATAB_ADDR + block_ptr + read_ptr;
+        end else begin
+          nextState = WAIT_OP;
+          idle = 1'b1;
+          read = 1'b1;
+          mem_addr = `OP_ADDR;
         end
       end
       READ_SCALAR: begin
@@ -130,8 +133,8 @@ module FSM
             mem_addr = `DATAB_ADDR + block_ptr + read_ptr;
           end else begin
             nextState = READ_A;
-            mem_addr = `DATAB_ADDR + block_ptr + read_ptr;
             read_next = 1'b1;
+            mem_addr = `DATAA_ADDR + block_ptr + read_ptr;
           end
         end else begin
           nextState = COMPUTE;
@@ -141,8 +144,8 @@ module FSM
       READ_B: begin
         nextState = READ_A;
         read = 1'b1;
-        mem_addr = `DATAA_ADDR + block_ptr + read_ptr;
         read_next = 1'b1;
+        mem_addr = `DATAA_ADDR + block_ptr + read_ptr;
         save_B[read_ptr] = 1'b1;
       end
       COMPUTE: begin
@@ -235,7 +238,8 @@ module MatMem
   FSM fsm (.clock, .reset, .meta_data, .dataRes, .mem_addr, .mem_data,
            .read, .write, .idle, .save_op, .save_scalar, .save_Res, .save_A, .save_B);
 
-  M10KControl mem (.read, .write, .address(mem_addr), .writedata(mem_data), .readdata(data));
+  // M10KControl mem (.read, .write, .address(mem_addr), .writedata(mem_data), .readdata(data));
+  fakemem mem (.clock, .read, .write, .address(mem_addr), .writedata(mem_data), .readdata(data));
 
   genvar i;
   generate
@@ -266,7 +270,10 @@ module MatMem_test();
     reset = 1'b0;
     reset <= 1'b1;
 
-    #1000000;
+    @(posedge clock);
+    reset <= 1'b0;
+
+    #1000;
 
     $finish;
   end
