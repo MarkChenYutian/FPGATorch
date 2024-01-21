@@ -1,3 +1,5 @@
+`include "Macro.svh"
+
 module Register
   #(parameter WIDTH=8)
   (input  logic [WIDTH-1:0] D,

@@ -2,8 +2,6 @@
 
 `include "Macro.svh"
 
-`timescale 1 ps / 1 ps
-
 module SystolicArray_SR #(N = 1)
   (input reset, clock, shift, store,
    input [`DATA_WIDTH-1:0] datain,
@@ -38,7 +36,7 @@ endmodule: SystolicArray_SR
 
 module SystolicArray_Driver
  (input logic clock, reset, start,
-  input logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdata, 
+  input logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdataA, readdataB,
   input logic [`ADDR_WIDTH-1:0] base_A, base_B,
   input logic [`DIM_WIDTH-1:0] dim_col_A, dim_col_B,
   output logic readA, readB, done,
@@ -167,7 +165,7 @@ module SystolicArray_Driver
             InputBuff_A[k][m] <= InputBuff_A[k][m+1];
           end
           else if (storeA && store_A_index == k) begin
-            InputBuff_A[k][m] <= readdata[m];
+            InputBuff_A[k][m] <= readdataA[m];
           end
         end
       end: InputBuff_A_SR
@@ -177,7 +175,7 @@ module SystolicArray_Driver
   generate
     for (i = 1; i <= 8; i++) begin: InputBuff_B1
       SystolicArray_SR #(i) SR_B(.reset(start), .clock, .shift(en_SA), .store(storeB),
-                                 .datain(readdata[i-1]), .dataout(SA_inputB[i-1]));
+                                 .datain(readdataB[i-1]), .dataout(SA_inputB[i-1]));
     end: InputBuff_B1
   endgenerate
 

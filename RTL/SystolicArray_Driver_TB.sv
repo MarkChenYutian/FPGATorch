@@ -23,7 +23,7 @@ endmodule: fakemem
 module SystolicArray_TB;
   logic clock, reset, start, readA, readB, done;
   logic [`ADDR_WIDTH-1:0] read_addr;
-  logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdata;
+  logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdataA, readdataB;
   logic [`ADDR_WIDTH-1:0] base_A, base_B;
   logic [`DIM_WIDTH-1:0] dim_col_A, dim_col_B;
   logic [7:0][7:0][`DATA_WIDTH-1:0] Out;
@@ -34,7 +34,8 @@ module SystolicArray_TB;
   assign dim_col_B = 'd8;
 
   SystolicArray_Driver DUT(.*);
-  fakemem F(.read(readA | readB), .clock, .data(readdata), .read_addr);
+  fakemem F(.read(readA | readB), .clock, .data(readdataA), .read_addr);
+  assign readdataB = readdataA;
 
   initial begin
     clock = 1'b0;
