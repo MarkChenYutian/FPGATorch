@@ -13,12 +13,10 @@
 
 `define SINGLE_ACCESS 8
 
-`define CYCLE_WIDTH 4
+`define CYCLE_WIDTH 3
 `define CYCLE_MUL 5
-`define CYCLE_DIV 5
+`define CYCLE_DIV 6
 `define CYCLE_ADD 7
-`define CYCLE_INV 5
-`define CYCLE_MAT_MUL 5
 
 `timescale 1 ps / 1 ps
 
@@ -45,7 +43,6 @@ typedef struct packed {
 typedef struct packed {
   logic read;
   logic write;
-  logic address;
-  logic writedata;
-  logic readdata;
+  logic [`ADDR_WIDTH-1:0] address;
+  logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] writedata;
 } mem_t;

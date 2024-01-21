@@ -3,17 +3,6 @@
 `include "Macro.svh"
 
 
-module ALU
-  (input logic clock, reset,
-   input op_code_t OP,
-   output logic done);
-
-  // case operation -> inputs
-
-
-endmodule : ALU
-
-
 module FSM
   (input logic clock, reset,
    input meta_data_t meta_data,
@@ -171,9 +160,47 @@ module FSM
 
 endmodule : FSM
 
+module MatMem_unpack
+ (input logic clock, reset,
+  output logic [10:0]  fpga_mem_a_address,                      //                    fpga_mem.address
+	output logic         fpga_mem_a_chipselect,                   //                            .chipselect
+	output logic         fpga_mem_a_clken,                        //                            .clken
+	output logic         fpga_mem_a_write,                        //                            .write
+	input logic  [255:0] fpga_mem_a_readdata,                     //                            .readdata
+	output logic [255:0] fpga_mem_a_writedata,                    //                            .writedata
+	output logic [31:0]  fpga_mem_a_byteenabl,                   //                            .byteenable
+	
+	output logic [10:0]  fpga_mem_b_address,                      //                    fpga_mem.address
+	output logic         fpga_mem_b_chipselect,                   //                            .chipselect
+	output logic         fpga_mem_b_clken,                        //                            .clken
+	output logic         fpga_mem_b_write,                        //                            .write
+	input logic  [255:0] fpga_mem_b_readdata,                     //                            .readdata
+	output logic [255:0] fpga_mem_b_writedata,                    //                            .writedata
+	output logic [31:0]  fpga_mem_b_byteenabl,                   //                            .byteenable
+
+  output logic [10:0]  fpga_mem_c_address,                      //                    fpga_mem.address
+	output logic         fpga_mem_c_chipselect,                   //                            .chipselect
+	output logic         fpga_mem_c_clken,                        //                            .clken
+	output logic         fpga_mem_c_write,                        //                            .write
+	input logic  [255:0] fpga_mem_c_readdata,                     //                            .readdata
+	output logic [255:0] fpga_mem_c_writedata,                    //                            .writedata
+	output logic [31:0]  fpga_mem_c_byteenabl,
+
+  output logic [9:0]   instruction_mem_address,               //             instruction_mem.address
+  output logic         instruction_mem_chipselect,            //                            .chipselect
+  output logic         instruction_mem_clken,                 //                            .clken
+  output logic         instruction_mem_write,                 //                            .write
+  input logic  [31:0]  instruction_mem_readdata,              //                            .readdata
+  output logic [31:0]  instruction_mem_writedata,             //                            .writedata
+  output logic [3:0]   instruction_mem_byteenable            //                            .byteenable
+);
+
+endmodule: MatMem_unpack
 
 module MatMem
-  (input logic clock, reset);
+ (input logic clock, reset,
+  
+);
 
   meta_data_t meta_data;
   logic [`SINGLE_ACCESS-1:0][`DATA_WIDTH*`BANDWIDTH-1:0] dataA_reg, dataB_reg, dataRes, dataRes_reg;
@@ -186,9 +213,7 @@ module MatMem
   logic idle, save_op, save_scalar, save_Res;
   logic [`SINGLE_ACCESS-1:0] save_A, save_B;
 
-  assign meta_data = data_op;
-
-  FSM fsm (.*);
+  FSM fsm (.meta_data(data_op), .*);
 
   // M10KControl mem (.read, .write, .address(mem_addr), .writedata(mem_data), .readdata(data));
   fakemem memA (.clock, .read(read_A), .write(), .address(mem_addr_A), .writedata(), .readdata(dataA));
@@ -210,7 +235,9 @@ module MatMem
       begin : multiple_bandwidth
         MatAdd add (.clock, .reset, .dataA(dataA_reg[i][`DATA_WIDTH*(j+1)-1 : `DATA_WIDTH*j]),
                     .dataB((op_code == MAT_ADD) ? dataB_reg[i][`DATA_WIDTH*(j+1)-1 : `DATA_WIDTH*j] : scalar_reg),
-                    .dataC(dataRes[i][`DATA_WIDTH*(j+1)-1 : `DATA_WIDTH*j]));
+                    .dataC(dataRes_Add[i][`DATA_WIDTH*(j+1)-1 : `DATA_WIDTH*j]));
+        MatScalMul mult (.clock, .reset, .dataA(dataA_reg[i][`DATA_WIDTH*(j+1)-1 : `DATA_WIDTH*j]),
+                         .dataB(scalar_reg), .dataC(dataRes_ScalMul[i][`DATA_WIDTH*(j+1)-1 : `DATA_WIDTH*j]));
       end : multiple_bandwidth
     end : multiple_reg
   endgenerate
@@ -244,7 +271,7 @@ module MatMem_test();
 endmodule : MatMem_test
 
 
-module MatAdd // read -> add -> save
+module MatAdd
   (input logic clock, reset,
    input logic [`DATA_WIDTH-1:0] dataA, dataB,
    output logic [`DATA_WIDTH-1:0] dataC);
@@ -259,3 +286,21 @@ module MatAdd // read -> add -> save
                         .zero());
 
 endmodule : MatAdd
+
+
+module MatScalMul
+  (input logic clock, reset,
+   input logic [`DATA_WIDTH-1:0] dataA, scalar,
+   output logic [`DATA_WIDTH-1:0] dataRes);
+
+  mult_cycle_5 mult (
+    .clock,
+    .dataa(dataA),
+    .datab(scalar),
+    .nan,
+    .overflow,
+    .result(dataRes),
+    .underflow,
+    .zero)
+
+endmodule : MatScalMul

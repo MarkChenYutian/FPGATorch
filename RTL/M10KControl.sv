@@ -36,7 +36,7 @@ module fakemem
   logic [63:0][255:0] mem;
 
   always_comb begin
-    mem[0] = {4'd1, 7'd16, 7'd12, 7'd16, 7'd12};
+    mem[0] = {4'd4, 7'd16, 7'd12, 7'd16, 7'd12};
     // mem[1] = (5);
     // mem[9:2] = (0);
     // mem[10] = (1);
