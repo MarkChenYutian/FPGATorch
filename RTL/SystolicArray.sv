@@ -41,7 +41,7 @@ module SystolicArray_Driver
   input logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdata, 
   input logic [`ADDR_WIDTH-1:0] base_A, base_B,
   input logic [`DIM_WIDTH-1:0] dim_col_A, dim_col_B,
-  output logic read, done,
+  output logic readA, readB, done,
   output logic [`ADDR_WIDTH-1:0] read_addr,
   output logic [7:0][7:0][`DATA_WIDTH-1:0] Out);
 
@@ -76,7 +76,8 @@ module SystolicArray_Driver
 
   always_comb begin
     en_count = 'b0;
-    read = 'b0;
+    readA = 'b0;
+    readB = 'b0;
     read_addr = 'b0;
     storeA = 'b0;
     storeB1 = 'b0;
@@ -92,7 +93,7 @@ module SystolicArray_Driver
       FETCH_A1: begin
         nextState = FETCH_A2;
         if (count_stage < 8) begin
-          read = 'b1;
+          readA = 'b1;
           read_addr = addr_A1;
         end
       end
@@ -100,7 +101,7 @@ module SystolicArray_Driver
         nextState = FETCH_B1;
         if (count_stage < 12) begin
           if (count_stage >= 'd4) begin
-            read = 'b1;
+            readA = 'b1;
             read_addr = addr_A2;
           end
           storeA = 'b1;
@@ -112,7 +113,7 @@ module SystolicArray_Driver
         // After 8 iterations all B data are loaded, only needed to advance the buffer
         if (count_stage < 12) begin
           if (count_stage < 8) begin
-            read = 'b1;
+            readB = 'b1;
             read_addr = addr_B;
           end
           if (count_stage >= 'd4) begin
@@ -124,7 +125,7 @@ module SystolicArray_Driver
       FETCH_B2: begin
         nextState = CLEANUP;
         if (count_stage < 8) begin
-          read = 'b1;
+          readB = 'b1;
           read_addr = addr_B + 'd4;
           storeB1 = 'b1;
         end
