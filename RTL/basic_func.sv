@@ -8,8 +8,10 @@
 module FSM
   (input logic clock, reset,
    input meta_data_t meta_data,
-   output meta_data_t meta_data_reg,
+   input logic MatMul_done,
    input logic [`SINGLE_ACCESS-1:0][`BANDWIDTH-1:0][`DATA_WIDTH-1:0] dataRes,
+   input mem_t memA_Mul, memB_Mul, memRes_Mul,
+   output meta_data_t meta_data_reg,
    output mem_t memOp, memA, memB, memRes,
    output logic idle, save_op, save_scalar, save_Res,
    output logic [`SINGLE_ACCESS-1:0] save_A, save_B);
@@ -17,7 +19,7 @@ module FSM
   enum logic [2:0] {WAIT_OP, MUL, READ_SCALAR, READ, COMPUTE, WRITE} state, nextState;
 
   logic [`ADDR_WIDTH-1:0] read_ptr, write_ptr, block_ptr;
-  logic [(`DIM_WIDTH-`BANDWIDTH)*2-1:0] dim_total;
+  logic [(`DIM_WIDTH-$clog2(`BANDWIDTH))*2-1:0] dim_total;
   logic [`CYCLE_WIDTH-1:0] op_count, op_cycle;
   logic read_next, write_next, next_block, op_compute;
   
@@ -76,19 +78,31 @@ module FSM
           memA.address = `DATAA_ADDR + block_ptr + read_ptr;
           memB.address = `DATAB_ADDR + block_ptr + read_ptr;
           read_next = 1'b1;
-        // end else if (meta_data.op_code == MAT_MUL) begin
-        //   nextState = MUL;
-        //   save_op = 1'b1;
-        //   memA.read = memA_Mul.read;
-        //   memB.read = memB_Mul.read;
-        //   memA.address = `DATAA_ADDR + block_ptr + read_ptr;
-        //   memB.address = `DATAB_ADDR + block_ptr + read_ptr;
-        //   read_next = 1'b1;
+        end else if (meta_data.op_code == MAT_MUL) begin
+          nextState = MUL;
+          save_op = 1'b1;
+          memA.read = memA_Mul.read;
+          memB.read = memB_Mul.read;
+          memA.address = memA_Mul.address;
+          memB.address = memB_Mul.address;
         end else begin
           nextState = WAIT_OP;
           idle = 1'b1;
           memOp.read = 1'b1;
           memOp.address = `OP_ADDR;
+        end
+      end
+      MUL: begin
+        if (~MatMul_done) begin
+          nextState = MUL;
+          memA = memA_Mul;
+          memB = memB_Mul;
+          memRes = memRes_Mul;
+        end else begin
+          nextState = WAIT_OP;
+          memOp.write = 1'b1;
+          memOp.address = `OP_ADDR;
+          memOp.writedata = 0;
         end
       end
       READ_SCALAR: begin
@@ -163,9 +177,10 @@ module MatMem
   input logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdataOp, readdataA, readdataB);
 
   meta_data_t meta_data, meta_data_reg;
+  mem_t memA_Mul, memB_Mul, memRes_Mul;
   logic [`SINGLE_ACCESS-1:0][`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdataA_reg, readdataB_reg, dataRes, dataRes_reg, dataRes_Add, dataRes_ScalMul;
   logic [`DATA_WIDTH-1:0] scalar_reg;
-  logic idle, save_op, save_scalar, save_Res;
+  logic idle, save_op, save_scalar, save_Res, MatMul_done;
   logic [`SINGLE_ACCESS-1:0] save_A, save_B;
 
   FSM fsm (.meta_data(readdataOp), .*);
@@ -191,7 +206,8 @@ module MatMem
     end : multiple_reg
   endgenerate
 
-  // Mult matmul (.clock, .reset, .MatMul_en(meta_data_reg.op_code == MAT_MUL), .op(meta_data_reg), .finish(), .readdataA, .readdataB);
+  Mult matmul (.clock, .reset, .MatMul_en(meta_data_reg.op_code == MAT_MUL), .op(meta_data_reg), .finish(MatMul_done),
+               .readdataA, .readdataB, .memA(memA_Mul), .memB(memB_Mul), .memC(memRes_Mul));
 
   always_comb begin
     case (meta_data_reg.op_code)
