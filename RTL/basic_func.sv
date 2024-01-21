@@ -2,26 +2,6 @@
 
 `include "Macro.svh"
 
-typedef enum logic [`OP_WIDTH-1:0] {
-  NONE = 0,
-  MAT_ADD = 1,
-  MAT_SCAL_MUL = 2,
-  MAT_SCAL_DIV = 3,
-  MAT_SCAL_ADD = 4,
-  MAT_SCAL_INV = 5,
-  MAT_MUL = 6,
-  MAT_TRAS = 7,
-  REDUCE_SUM = 8
-} op_code_t;
-
-typedef struct packed {
-  op_code_t op_code;
-  logic [`DIM_WIDTH-1:0] dimA1;
-  logic [`DIM_WIDTH-1:0] dimA2;
-  logic [`DIM_WIDTH-1:0] dimB1;
-  logic [`DIM_WIDTH-1:0] dimB2;
-} meta_data_t;
-
 
 module ALU
   (input logic clock, reset,
@@ -37,9 +17,9 @@ endmodule : ALU
 module FSM
   (input logic clock, reset,
    input meta_data_t meta_data,
-   input logic [`SINGLE_ACCESS-1:0][`DATA_WIDTH-1:0] dataRes,
+   input logic [`SINGLE_ACCESS-1:0][`DATA_WIDTH*`BANDWIDTH-1:0] dataRes,
    output logic [`ADDR_WIDTH-1:0] mem_addr_op, mem_addr_A, mem_addr_B, mem_addr_Res,
-   output logic [`DATA_WIDTH-1:0] mem_data_op, mem_data_Res,
+   output logic [`DATA_WIDTH*`BANDWIDTH-1:0] mem_data_op, mem_data_Res,
    output logic read_op, read_A, read_B, write_op, write_Res,
    output logic idle, save_op, save_scalar, save_Res,
    output logic [`SINGLE_ACCESS-1:0] save_A, save_B);
@@ -193,50 +173,15 @@ module FSM
 
 endmodule : FSM
 
-/*
-module FSM_test();
-
-  logic clock, reset;
-  meta_data_t meta_data;
-  logic [`SINGLE_ACCESS-1:0][`DATA_WIDTH-1:0] dataRes;
-  logic [`ADDR_WIDTH-1:0] mem_addr;
-  logic [`DATA_WIDTH-1:0] mem_data;
-  logic read, write, idle, save_op, save_scalar, save_Res;
-  logic [`SINGLE_ACCESS-1:0] save_A, save_B;
-
-  FSM dut (.*);
-
-  initial begin
-    clock = 1'b0;
-    forever #5 clock = ~clock;
-  end
-
-  initial begin
-    reset = 1'b0;
-    reset <= 1'b1;
-
-    @(posedge clock);
-    reset <= 1'b0;
-    meta_data.op_code <= MAT_ADD;
-    meta_data.dimA1 <= 16;
-    meta_data.dimA2 <= 24;
-
-    #1000000;
-
-    $finish;
-  end
-
-endmodule : FSM_test
-*/
 
 module MatMem
   (input logic clock, reset);
 
   meta_data_t meta_data;
-  logic [`SINGLE_ACCESS-1:0][`DATA_WIDTH-1:0] dataA_reg, dataB_reg, dataRes, dataRes_reg;
-  logic [`DATA_WIDTH-1:0] data_op, data_op_reg, dataA, dataB;
+  logic [`SINGLE_ACCESS-1:0][`DATA_WIDTH*`BANDWIDTH-1:0] dataA_reg, dataB_reg, dataRes, dataRes_reg;
+  logic [`DATA_WIDTH*`BANDWIDTH-1:0] data_op, data_op_reg, dataA, dataB;
   logic [`ADDR_WIDTH-1:0] mem_addr_op, mem_addr_A, mem_addr_B, mem_addr_Res;
-  logic [`DATA_WIDTH-1:0] mem_data_op, mem_data_Res, data;
+  logic [`DATA_WIDTH*`BANDWIDTH-1:0] mem_data_op, mem_data_Res, data;
   logic read_op, read_A, read_B, write_op, write_Res;
   logic idle, save_op, save_scalar, save_Res;
   logic [`SINGLE_ACCESS-1:0] save_A, save_B;
@@ -251,16 +196,20 @@ module MatMem
   fakemem memop (.clock, .read(read_op), .write(write_op), .address(mem_addr_op), .writedata(mem_data_op), .readdata(data_op));
   fakemem memRes (.clock, .read(), .write(write_Res), .address(mem_addr_Res), .writedata(mem_data_Res), .readdata());
 
-  Register #(`DATA_WIDTH) reg_scalar (.D(data_op), .en(save_scalar), .clear(idle), .clock, .Q(data_op_reg));
+  Register #(`DATA_WIDTH*`BANDWIDTH) reg_scalar (.D(data_op), .en(save_scalar), .clear(idle), .clock, .Q(data_op_reg));
 
-  genvar i;
+  genvar i, j;
   generate
     for (i = 0; i < `SINGLE_ACCESS; i = i + 1)
     begin : multiple_reg
-      Register #(`DATA_WIDTH) regA (.D(dataA), .en(save_A[i]), .clear(idle), .clock, .Q(dataA_reg[i]));
-      Register #(`DATA_WIDTH) regB (.D(dataB), .en(save_B[i]), .clear(idle), .clock, .Q(dataB_reg[i]));
-      Register #(`DATA_WIDTH) regRes (.D(dataRes[i]), .en(save_Res), .clear(idle), .clock, .Q(dataRes_reg[i]));
-      MatAdd add (.clock, .reset, .dataA(dataA_reg[i]), .dataB(dataB_reg[i]), .dataC(dataRes[i]));
+      Register #(`DATA_WIDTH*`BANDWIDTH) regA (.D(dataA), .en(save_A[i]), .clear(idle), .clock, .Q(dataA_reg[i]));
+      Register #(`DATA_WIDTH*`BANDWIDTH) regB (.D(dataB), .en(save_B[i]), .clear(idle), .clock, .Q(dataB_reg[i]));
+      Register #(`DATA_WIDTH*`BANDWIDTH) regRes (.D(dataRes[i]), .en(save_Res), .clear(idle), .clock, .Q(dataRes_reg[i]));
+
+      for (j = 0; j < `BANDWIDTH; j = j + 1)
+      begin : multiple_bandwidth
+        MatAdd add (.clock, .reset, .dataA(dataA_reg[i][`DATA_WIDTH*(j+1) : `DATA_WIDTH*j]), .dataB(dataB_reg[i][`DATA_WIDTH*(j+1) : `DATA_WIDTH*j]), .dataC(dataRes[i][`DATA_WIDTH*(j+1) : `DATA_WIDTH*j]));
+      end : multiple_bandwidth
     end : multiple_reg
   endgenerate
 

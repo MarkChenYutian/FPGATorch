@@ -2,8 +2,8 @@
 TARGET = simv
 
 # Source files
-SRC = basic_func.sv add_cycle_7_area.v library.sv M10KControl.sv 
-
+# SRC = basic_func.sv add_cycle_7_area.v library.sv M10KControl.sv 
+SRC = MatMul_large.sv add_cycle_7_area.v 
 # VCS flags
 VCSFLAGS = -sverilog -debug_all 
 COMMON_FLAGS +=

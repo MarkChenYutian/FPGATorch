@@ -1,5 +1,7 @@
 `default_nettype none
 
+`include "Macro.svh"
+
 typedef struct packed {
     // Updated only at beginning
     logic [`DIM_WIDTH-4:0] dimA1;
@@ -25,7 +27,7 @@ module MultAddr_Driver (
     input meta_data_t op,
     output logic write, 
     output logic [`ADDR_WIDTH-1:0] addr,
-    output logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] writedata;
+    output logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] writedata,
 
     // io with 8*8 mult module
     output logic mult_start,
@@ -52,7 +54,7 @@ module MultAddr_Driver (
             acc_mat <= 0;
             dim_b <= 0;
         end
-        else if (dim_en) begin
+        else if (MatMul_en) begin
             dim_b.dimA1 <= (op.dimA1 >> 3);
             dim_b.dimA2 <= (op.dimA2 >> 3);
             dim_b.dimB1 <= (op.dimB1 >> 3);
@@ -154,13 +156,15 @@ module MultAddr_Driver (
                 write_i <= 0;
                 write <= 1;
                 addr <= base_C;
+                writedata <= acc_mat[0];
             end
             else if(write) begin
                 if (write_i == 4'd7) begin
                     write <= 0;
                 end
-                write_i <= write_i + 1;
                 addr <= base_C + write_i * dim_b.block_count;
+                writedata <= acc_mat[write_i + 1];
+                write_i <= write_i + 1;
             end
         end
     end
@@ -215,5 +219,4 @@ module MultAddr_Driver (
           end
         endcase
       end
-
 endmodule
