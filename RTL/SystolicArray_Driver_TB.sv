@@ -2,26 +2,9 @@
 
 `include "Macro.svh"
 
-module fakemem
-  (input logic read, clock, 
-   input logic [`ADDR_WIDTH-1:0] read_addr,
-   output logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] data);
-
-  logic [139:0][31:0] mem;
-
-  assign mem[63:0] = {$shortrealtobits(3), $shortrealtobits(9), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(2), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(7), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(3), $shortrealtobits(3), $shortrealtobits(5), $shortrealtobits(1), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(9), $shortrealtobits(9), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(8), $shortrealtobits(2), $shortrealtobits(7), $shortrealtobits(5), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(2), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(6), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(5), $shortrealtobits(5), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(3), $shortrealtobits(6), $shortrealtobits(3), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(5)};
-  assign mem[133:70] = {$shortrealtobits(7), $shortrealtobits(7), $shortrealtobits(2), $shortrealtobits(6), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(6), $shortrealtobits(5), $shortrealtobits(5), $shortrealtobits(8), $shortrealtobits(4), $shortrealtobits(8), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(1), $shortrealtobits(1), $shortrealtobits(4), $shortrealtobits(2), $shortrealtobits(7), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(7), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(6), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(4), $shortrealtobits(9), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(7), $shortrealtobits(7), $shortrealtobits(8), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(8), $shortrealtobits(5), $shortrealtobits(2), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(1), $shortrealtobits(5), $shortrealtobits(1), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(4), $shortrealtobits(1), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(2), $shortrealtobits(8), $shortrealtobits(3), $shortrealtobits(7), $shortrealtobits(1), $shortrealtobits(9), $shortrealtobits(9), $shortrealtobits(3), $shortrealtobits(2), $shortrealtobits(4)};
-
-  always_ff @(posedge clock) begin
-    if (read) data <= {mem[read_addr+7], mem[read_addr+6], mem[read_addr+5], mem[read_addr+4],
-                       mem[read_addr+3], mem[read_addr+2], mem[read_addr+1], mem[read_addr]};
-    else data <= 'b0;
-  end
-
-endmodule: fakemem
-
 module SystolicArray_TB;
   logic clock, reset, start, readA, readB, done;
+  logic write;
   logic [`ADDR_WIDTH-1:0] read_addr;
   logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdataA, readdataB;
   logic [`ADDR_WIDTH-1:0] base_A, base_B;
@@ -34,7 +17,7 @@ module SystolicArray_TB;
   assign dim_col_B = 'd8;
 
   SystolicArray_Driver DUT(.*);
-  fakemem F(.read(readA | readB), .clock, .data(readdataA), .read_addr);
+  fakemem F(.read(readA | readB), .write, .clock, .data(readdataA), .addr(read_addr));
   assign readdataB = readdataA;
 
   initial begin

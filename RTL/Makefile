@@ -2,7 +2,7 @@
 TARGET = simv
 
 # Source files
-SRC = basic_func.sv add_cycle_7_area.v library.sv M10KControl.sv 
+SRC = basic_func.sv add_cycle_7_area.v mult_cycle_5.v library.sv fakemem.sv
 
 # VCS flags
 VCSFLAGS = -sverilog -debug_all 
