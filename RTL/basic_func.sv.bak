@@ -222,26 +222,26 @@ endmodule : MatMem
 
 module MatMem_test();
 
- logic clock, reset;
+  logic clock, reset;
 
- MatMem dut (.*);
+  MatMem dut (.*);
 
- initial begin
-   clock = 1'b0;
-   forever #5 clock = ~clock;
- end
+  initial begin
+    clock = 1'b0;
+    forever #5 clock = ~clock;
+  end
 
- initial begin
-   reset = 1'b0;
-   reset <= 1'b1;
+  initial begin
+    reset = 1'b0;
+    reset <= 1'b1;
 
-   @(posedge clock);
-   reset <= 1'b0;
+    @(posedge clock);
+    reset <= 1'b0;
 
-   #1000;
+    #1000;
 
-   $finish;
- end
+    $finish;
+  end
 
 endmodule : MatMem_test
 
