@@ -38,7 +38,7 @@ endmodule: SystolicArray_SR
 
 module SystolicArray_Driver
  (input logic clock, reset, start,
-  input logic [`READ_BW-1:0][`DATA_WIDTH-1:0] readdata, 
+  input logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdata, 
   input logic [`ADDR_WIDTH-1:0] base_A, base_B,
   input logic [`DIM_WIDTH-1:0] dim_col_A, dim_col_B,
   output logic read, done,
@@ -61,8 +61,8 @@ module SystolicArray_Driver
   Accum #(`ADDR_WIDTH) AddrB(.clock, .load(start), .en(en_count),
                             .D(base_B), .offset(dim_col_B), .Q(addr_B));
 
-  enum logic [2:0] {WAIT, FETCH_A1, FETCH_A2, FETCH_B1, FETCH_B2,
-                    CLEANUP, SHIFT, DONE} state, nextState;
+  enum logic [3:0] {WAIT, FETCH_A1, FETCH_A2, FETCH_B1, FETCH_B2,
+                    CLEANUP, DUM1, DUM2, SHIFT, DONE} state, nextState;
   
   always_ff @(posedge clock, posedge reset) begin
     if (reset) state <= WAIT;
@@ -130,14 +130,20 @@ module SystolicArray_Driver
         end
       end
       CLEANUP: begin
-        nextState = SHIFT;
+        nextState = DUM1;
         en_count = 'b1;
         if (count_stage < 8) begin
           storeB2 = 'b1;
         end
       end
+      DUM1: begin
+        nextState = DUM2;
+      end
+      DUM2: begin
+        nextState = SHIFT;
+      end
       SHIFT: begin
-        if (count_stage == 'd24) nextState = DONE;
+        if (count_stage == 'd25) nextState = DONE;
         else begin
           nextState = FETCH_A1;
           en_SA = 'b1;
@@ -154,7 +160,7 @@ module SystolicArray_Driver
   logic [7:0][`DATA_WIDTH-1:0] SA_inputA, SA_inputB;
 
   // Shape systolic array input
-  logic [7:0][`READ_BW-1:0][`DATA_WIDTH-1:0] InputBuff_A;
+  logic [7:0][`BANDWIDTH-1:0][`DATA_WIDTH-1:0] InputBuff_A;
   genvar n;
   generate
     for (n = 0; n < 8; n++) begin: SA_inputA_assign
@@ -209,16 +215,18 @@ module SystolicArray #(parameter N = 8)
   
   // Input ShiftReg for each processor
   // A: row shift  B: col shift
-  logic [N-1:0][N-1:0][`DATA_WIDTH-1:0] A_SR, B_SR, MultRes;
+  logic [N-1:0][N-1:0][`DATA_WIDTH-1:0] A_SR, B_SR, MultRes, Out_mult_temp, Out_add_temp;
 
   genvar r, c;
   generate
     for (r = 0; r < N; r++)
       for (c = 0; c < N; c++) begin: SAProcessor
 
-        // Floating mult IP
-        mult_cycle_5(.clock(clock), .dataa(A_SR[r][c]), .datab(B_SR[r][c]),
-                     .nan(), .overflow(), .result(MultRes[r][c]), .underflow(), .zero());
+        // Floating mult/add IP
+        mult_cycle_5 mult(.clock(clock), .dataa(A_SR[r][c]), .datab(B_SR[r][c]),
+                          .nan(), .overflow(), .result(MultRes[r][c]), .underflow(), .zero());
+        add_cycle_7_area add(.clock(clock), .dataa(Out[r][c]), .datab(Out_mult_temp[r][c]),
+                             .nan(), .overflow(), .result(Out_add_temp[r][c]), .underflow(), .zero());
 
         always_ff @(posedge clock) begin
           // Handle reset
@@ -226,10 +234,12 @@ module SystolicArray #(parameter N = 8)
             A_SR[r][c] <= 'b0;
             B_SR[r][c] <= 'b0;
             Out[r][c] <= 'b0;
+            Out_mult_temp[r][c] <= 'b0;
           end
           else if (en) begin
             // Mult + Accum
-            Out[r][c] <= Out[r][c] + MultRes[r][c];
+            Out_mult_temp[r][c] <= MultRes[r][c];
+            Out[r][c] <= Out_add_temp[r][c];
             // Handle ShiftReg
             // A
             if (c == 0) begin
