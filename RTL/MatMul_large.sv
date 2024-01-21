@@ -1,6 +1,10 @@
 `default_nettype none
 
-`include "Macro.svh"
+//`include "Macro.svh"
+`ifndef MACRO
+  `define MACRO
+  `include "Macro.svh"
+`endif
 
 typedef struct packed {
     // Updated only at beginning
@@ -19,13 +23,54 @@ typedef struct packed {
     logic [`DIM_WIDTH-4:0] Bj; // col of B
     logic [7:0] total_i;
 } mat_ind_t;
+
+module Mult(
+    // io with upper level controller
+    input logic clock, reset, MatMul_en,
+    input meta_data_t op,
+    output finish,
+    // io with memory
+    input logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdataA, readdataB,
+    output mem_t memA, memB, memC);
+
+    logic write;
+    logic [`ADDR_WIDTH-1:0] addr;
+    logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] writedata;
+
+    logic mult_start;
+    //logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdataA, readdataB;
+    logic [`ADDR_WIDTH-1:0] base_A, base_B;
+    logic [`DIM_WIDTH-1:0] dim_col_A, dim_col_B;
+    logic mult_done;
+    logic readA, readB;
+    logic [`ADDR_WIDTH-1:0]read_addr;
+    logic [7:0][7:0][`DATA_WIDTH-1:0] mult_out;
+
+    MultAddr_Driver driver(.*);
+    SystolicArray_Driver block_multiplier(.start(mult_start), .done(mult_done), .Out(mult_out), .*);
    
+    // Interface with memory to top
+    assign memA.read = readA;
+    assign memA.write = 0;
+    assign memA.address = read_addr;
+    assign memA.writedata = 0;
+
+    assign memB.read = readB;
+    assign memB.write = 0;
+    assign memB.address = read_addr;
+    assign memB.writedata = 0;
+
+    assign memC.read = 0;
+    assign memC.write = write;
+    assign memC.address = addr;
+    assign memC.writedata = writedata;
+endmodule 
 
 module MultAddr_Driver (
     // io with upper level controller
     input logic clock, reset, MatMul_en,
     input meta_data_t op,
-    output logic write, 
+    output logic write, finish,
     output logic [`ADDR_WIDTH-1:0] addr,
     output logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] writedata,
 
@@ -38,18 +83,26 @@ module MultAddr_Driver (
     
     // Counter Signals
     logic add_start, write_start;
-    logic add_done, block_done, total_done;
+    logic add_done, write_done, block_done, total_done;
     logic clear;
 
     // Internal registers
     logic [7:0][7:0][`DATA_WIDTH-1:0] temp_mat, acc_mat;
     logic [7:0] block_count;
 
+    // adder combinational output
+    logic [7:0][7:0][`DATA_WIDTH-1:0] add_mat;
+
     block_dim_t dim_b;
 
     // Register loading
     always_ff @(posedge clock, posedge reset) begin
-        if(reset | clear) begin
+        if(reset) begin
+            temp_mat <= 0;
+            acc_mat <= 0;
+            dim_b <= 0;
+        end
+        else if(clear) begin
             temp_mat <= 0;
             acc_mat <= 0;
             dim_b <= 0;
@@ -73,7 +126,7 @@ module MultAddr_Driver (
     end
 
     // 8 * 8 block adder
-    logic [7:0][7:0][`DATA_WIDTH-1:0] add_mat; // adder combinational output
+    
     genvar i,j;
     generate
         for (i = 0; i < 8; i++) 
@@ -94,7 +147,11 @@ module MultAddr_Driver (
     logic add_en;
     assign add_done = (add_i == 3'd7);
     always_ff @(posedge clock, posedge reset) begin
-        if(reset | clear) begin
+        if(reset) begin
+            add_i <= 0;
+            add_en <= 0;
+        end
+        else if(clear) begin
             add_i <= 0;
             add_en <= 0;
         end
@@ -114,13 +171,12 @@ module MultAddr_Driver (
     mat_ind_t mat_index;
     assign dim_col_A = dim_b.dimA2;
     assign dim_col_B = dim_b.dimB2;
-    assign block_done = (mat_index.Aj == block_count);
-    assign total_done = (mat_index.total_i == total_count);
+    assign block_done = (mat_index.Aj == dim_b.block_count);
+    assign total_done = (mat_index.total_i == dim_b.total_count);
     // Address Computation
     always_ff @(posedge clock, posedge reset) begin
-        if(reset | clear) begin
-            mat_index <= 0;
-        end
+        if(reset) mat_index <= 0;
+        else if (clear) mat_index <= 0;
         else begin
             if (block_done) begin
                 mat_index.Ai <=  mat_index.Ai + 1;
@@ -137,17 +193,17 @@ module MultAddr_Driver (
     assign base_A = `DATAA_ADDR + (mat_index.Ai * dim_b.block_count) + mat_index.Aj;
     assign base_B = `DATAB_ADDR + (mat_index.Aj * dim_b.block_count) + mat_index.Bj;
     
-    output logic write, 
-    output logic [`ADDR_WIDTH-1:0] addr,
-    output logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] writedata;
-    
     // Writing fsm
     logic [`ADDR_WIDTH-1:0] base_C;
     assign base_C = `RES_ADDR + (mat_index.Ai * dim_b.block_count) + mat_index.Bj;
     logic [3:0] write_i;
     assign write_done = (write_i == 4'd8);
     always_ff @(posedge clock, posedge reset) begin
-        if(reset | clear) begin
+        if(reset) begin
+            write_i <= 0;
+            write <= 0;
+        end
+        else if(clear) begin
             write_i <= 0;
             write <= 0;
         end
@@ -181,11 +237,12 @@ module MultAddr_Driver (
     end
 
     always_comb begin
+        add_start = 1'b0;
+        write_start = 1'b0;
+        mult_start = 1'b0;
+        clear = 1'b0;
+        finish = 1'b0;
         case (state)
-            add_start = 1'b0;
-            write_start = 1'b0;
-            mult_start = 1'b0;
-            clear = 1'b0;
           WAIT: begin
             if (MatMul_en) begin 
                 nextState = SEND;
@@ -214,6 +271,7 @@ module MultAddr_Driver (
             if (write_done) begin 
                 nextState = WAIT;
                 clear = 1'b1;
+                finish = 1'b1;
             end
             else nextState = WRITE;
           end

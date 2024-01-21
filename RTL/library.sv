@@ -1,4 +1,7 @@
-`include "Macro.svh"
+`ifndef MACRO
+  `define MACRO
+  `include "Macro.svh"
+`endif
 
 module Register
   #(parameter WIDTH=8)

@@ -1,6 +1,8 @@
-`default_nettype none
-
-`include "Macro.svh"
+//`include "Macro.svh"
+`ifndef MACRO
+  `define MACRO
+  `include "Macro.svh"
+`endif
 
 module SystolicArray_SR #(N = 1)
   (input reset, clock, shift, store,
