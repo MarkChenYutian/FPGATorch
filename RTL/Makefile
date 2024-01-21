@@ -35,3 +35,4 @@ clean :
 	-rm ucli.key
 	-rm -rf greybox_tmp
 	-rm inter.vpd
+	-rm .restartSimSession.tcl.old

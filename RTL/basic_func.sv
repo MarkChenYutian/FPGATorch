@@ -116,23 +116,21 @@ module FSM
         save_scalar = 1'b1;
       end
       READ: begin
+        save_A[read_ptr-1] = 1'b1;
+        save_B[read_ptr-1] = op_code == MAT_ADD;
         if (read_ptr < `SINGLE_ACCESS) begin
           read_A = 1'b1;
-          read_B = 1'b1;
-          save_A[read_ptr-1] = 1'b1;
-          save_B[read_ptr-1] = 1'b1;
+          read_B = op_code == MAT_ADD;
           mem_addr_A = `DATAA_ADDR + block_ptr + read_ptr;
           mem_addr_B = `DATAB_ADDR + block_ptr + read_ptr;
           read_next = 1'b1;
         end else begin
           nextState = COMPUTE;
           op_compute = 1'b1;
-          save_A[read_ptr-1] = 1'b1;
-          save_B[read_ptr-1] = op_code == MAT_ADD;
         end
       end
       COMPUTE: begin
-        if (op_count < op_cycle) begin
+        if (op_count <= op_cycle) begin
           nextState = COMPUTE;
           op_compute = 1'b1;
         end else begin
@@ -180,7 +178,7 @@ module MatMem
   meta_data_t meta_data;
   logic [`SINGLE_ACCESS-1:0][`DATA_WIDTH*`BANDWIDTH-1:0] dataA_reg, dataB_reg, dataRes, dataRes_reg;
   op_code_t op_code;
-  logic [`DATA_WIDTH*`BANDWIDTH-1:0] data_op, data_op_reg, dataA, dataB;
+  logic [`DATA_WIDTH*`BANDWIDTH-1:0] data_op, dataA, dataB;
   logic [`DATA_WIDTH-1:0] scalar_reg;
   logic [`ADDR_WIDTH-1:0] mem_addr_op, mem_addr_A, mem_addr_B, mem_addr_Res;
   logic [`DATA_WIDTH*`BANDWIDTH-1:0] mem_data_op, mem_data_Res;

@@ -41,3 +41,11 @@ typedef struct packed {
   logic [`DIM_WIDTH-1:0] dimB1;
   logic [`DIM_WIDTH-1:0] dimB2;
 } meta_data_t;
+
+typedef struct packed {
+  logic read;
+  logic write;
+  logic address;
+  logic writedata;
+  logic readdata;
+} mem_t;
