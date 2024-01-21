@@ -37,7 +37,7 @@ module Mult(
     logic [`ADDR_WIDTH-1:0] addr;
     logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] writedata;
 
-    logic mult_start;
+    logic mult_start, mult_start_NB;
     //logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] readdataA, readdataB;
     logic [`ADDR_WIDTH-1:0] base_A, base_B;
     logic [`DIM_WIDTH-1:0] dim_col_A, dim_col_B;
@@ -47,7 +47,11 @@ module Mult(
     logic [7:0][7:0][`DATA_WIDTH-1:0] mult_out;
 
     MultAddr_Driver driver(.*);
-    SystolicArray_Driver block_multiplier(.start(mult_start), .done(mult_done), .Out(mult_out), .*);
+    SystolicArray_Driver block_multiplier(.start(mult_start_NB), .done(mult_done), .Out(mult_out), .*);
+
+    always_ff @(posedge clock) begin
+        mult_start_NB <= mult_start;
+    end
    
     // Interface with memory to top
     assign memA.read = readA;
@@ -170,9 +174,11 @@ module MultAddr_Driver (
 
     // todo check off by one
     mat_ind_t mat_index;
+    logic row_done;
     assign dim_col_A = dim_b.dimA2;
     assign dim_col_B = dim_b.dimB2;
     assign block_done = (mat_index.Aj == dim_b.block_count);
+    assign row_done =  (mat_index.Bj == (op.dimB2 >> 3) - 1) & block_done;
     assign total_done = (mat_index.total_i == dim_b.total_count);
     // Address Computation
     always_ff @(posedge clock, posedge reset) begin
@@ -180,19 +186,28 @@ module MultAddr_Driver (
         else if (clear) mat_index <= 0;
         else begin
             if (state == SEND_DUM && block_done) begin
-                mat_index.Ai <=  mat_index.Ai + 1;
-                mat_index.Bj <=  mat_index.Bj + 1;
-                mat_index.Aj <=  0;
+                mat_index.Aj <= 0;
+                if(row_done) begin 
+                    mat_index.Ai <=  mat_index.Ai + 1;
+                    mat_index.Bj <= 0;
+                end
+                else begin
+                    mat_index.Bj <=  mat_index.Bj + 1;
+                end
                 mat_index.total_i <= mat_index.total_i + 1;
             end
-            else if(mult_done) begin
+            else if(nextState == SEND_DUM) begin
                 mat_index.Aj <=  mat_index.Aj + 1;
             end
         end
     end
 
-    assign base_A = `DATAA_ADDR + (mat_index.Ai * dim_b.block_count) << 3 + mat_index.Aj;
-    assign base_B = `DATAB_ADDR + (mat_index.Aj * dim_b.block_count) << 3 + mat_index.Bj;
+    logic [`ADDR_WIDTH-1:0] tmp1;
+    assign tmp1 = mat_index.Ai * dim_b.block_count * 8;
+    logic [`ADDR_WIDTH-1:0] tmp2;
+    assign tmp2 = mat_index.Aj * dim_b.block_count * 8;
+    assign base_A = `DATAA_ADDR + tmp1 + mat_index.Aj;
+    assign base_B = `DATAB_ADDR + tmp2 + mat_index.Bj;
     
     // Writing fsm
     logic [`ADDR_WIDTH-1:0] base_C;
