@@ -11,7 +11,7 @@
 `define OP_WIDTH 4
 `define DIM_WIDTH 7
 
-`define BANDWIDTH 4
+`define BANDWIDTH 8
 
 `define SINGLE_ACCESS 8
 
