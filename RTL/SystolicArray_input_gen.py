@@ -12,7 +12,7 @@ def main():
     # matrix1 = generate_matrix(size)
     # matrix2 = generate_matrix(size)
     matrix1 = np.random.randint(1, 11, size=(3*8, 2*8))
-    matrix2 = np.random.randint(1, 11, size=(2*8, 1*8))
+    matrix2 = np.random.randint(1, 11, size=(2*8, 2*8))
 
     # Compute the product of the two matrices
     product = np.dot(matrix1, matrix2)
