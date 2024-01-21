@@ -1,25 +1,8 @@
 `default_nettype none
 
-`define SIZE_MAX 64
-`define OP_NUM 11
+`include "Macro.svh"
 
-`define OP_ADDR 999
-`define DATA_ADDR 999
-`define RES_ADDR 999
-
-`define ADDR_WIDTH 12
-`define DATA_WIDTH 32
-`define OP_WIDTH 4
-`define DIM_WIDTH 6
-
-`define READ_BW 4
-
-`define SINGLE_MAT_ADD 8
-`define SINGLE_MUL 8
-`define SINGLE_DIV 8
-`define SINGLE_ADD 8
-`define SINGLE_INV 8
-`define SINGLE_MAT_MUL 8
+`timescale 1 ps / 1 ps
 
 module SystolicArray_SR #(N = 1)
   (input reset, clock, shift, store,
@@ -226,12 +209,17 @@ module SystolicArray #(parameter N = 8)
   
   // Input ShiftReg for each processor
   // A: row shift  B: col shift
-  logic [N-1:0][N-1:0][`DATA_WIDTH-1:0] A_SR, B_SR;
+  logic [N-1:0][N-1:0][`DATA_WIDTH-1:0] A_SR, B_SR, MultRes;
 
   genvar r, c;
   generate
     for (r = 0; r < N; r++)
       for (c = 0; c < N; c++) begin: SAProcessor
+
+        // Floating mult IP
+        mult_cycle_5(.clock(clock), .dataa(A_SR[r][c]), .datab(B_SR[r][c]),
+                     .nan(), .overflow(), .result(MultRes[r][c]), .underflow(), .zero());
+
         always_ff @(posedge clock) begin
           // Handle reset
           if (reset) begin
@@ -241,7 +229,7 @@ module SystolicArray #(parameter N = 8)
           end
           else if (en) begin
             // Mult + Accum
-            Out[r][c] <= Out[r][c] + A_SR[r][c]*B_SR[r][c];
+            Out[r][c] <= Out[r][c] + MultRes[r][c];
             // Handle ShiftReg
             // A
             if (c == 0) begin

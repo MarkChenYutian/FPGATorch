@@ -20,10 +20,23 @@ def main():
     print("\nMatrix 2:\n", matrix2)
     print("\nProduct of Matrix 1 and Matrix 2:\n", product)
 
-    # Print the flattened matrices
-    print("\nFlattened Matrix 1 (Reversed):", ', '.join(map(str, matrix1.flatten()[::-1])))
-    print("Flattened Matrix 2 (Reversed):", ', '.join(map(str, matrix2.flatten()[::-1])))
+    # # Print the flattened matrices
+    # print("\nFlattened Matrix 1 (Reversed):", ', '.join(map(str, matrix1.flatten()[::-1])))
+    # print("Flattened Matrix 2 (Reversed):", ', '.join(map(str, matrix2.flatten()[::-1])))
 
+
+    # Print the flattened matrices
+    flattened_reversed_matrix1 = matrix1.flatten()[::-1]
+    formatted_elements = [f"$shortrealtobits({element})" for element in flattened_reversed_matrix1]
+    formatted_string = ', '.join(formatted_elements)
+
+    print("Flattened and Reversed Matrix 1 with 'shortreal' Prefix:", formatted_string)
+
+    flattened_reversed_matrix2 = matrix2.flatten()[::-1]
+    formatted_elements = [f"$shortrealtobits({element})" for element in flattened_reversed_matrix2]
+    formatted_string = ', '.join(formatted_elements)
+
+    print("Flattened and Reversed Matrix 2 with 'shortreal' Prefix:", formatted_string)
 
 if __name__ == "__main__":
     main()
