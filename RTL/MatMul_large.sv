@@ -90,8 +90,15 @@ module MultAddr_Driver (
 
     // Counter Signals
     logic add_start, write_start;
-    logic add_done, write_done, block_done, total_done;
-    logic clear;
+    logic add_done, write_done, write_done_not_NB, block_done, total_done;
+    logic clear, clear_accum;
+
+    assign clear_accum = write_done & write_done_not_NB;
+    always_ff @(posedge clock) begin
+        write_done_not_NB <= ~write_done;
+    end
+
+
 
     // Internal registers
     logic [7:0][7:0][`DATA_WIDTH-1:0] temp_mat, acc_mat;
@@ -116,7 +123,7 @@ module MultAddr_Driver (
             temp_mat <= 0;
             acc_mat <= 0;
         end
-        else if(clear) begin
+        else if(clear | clear_accum) begin
             temp_mat <= 0;
             acc_mat <= 0;
         end
@@ -210,8 +217,17 @@ module MultAddr_Driver (
     assign base_B = `DATAB_ADDR + tmp2 + mat_index.Bj;
     
     // Writing fsm
-    logic [`ADDR_WIDTH-1:0] base_C;
-    assign base_C = `RES_ADDR + (mat_index.Ai * dim_b.block_count) + mat_index.Bj;
+    logic [`ADDR_WIDTH-1:0] base_C, base_C_prev;
+    // assign base_C = `RES_ADDR + (mat_index.Ai * dim_b.block_count) * 8 + mat_index.Bj;
+    logic mult_start_NB;
+    always_ff @(posedge clock) begin
+        mult_start_NB <= mult_start;
+        if (mult_start_NB) begin
+            base_C <= `RES_ADDR + (mat_index.Ai * dim_b.block_count) * 8 + mat_index.Bj;
+            base_C_prev <= base_C;
+        end
+    end
+
     logic [3:0] write_i;
     assign write_done = (write_i == 4'd8);
     always_ff @(posedge clock, posedge reset) begin
@@ -227,14 +243,14 @@ module MultAddr_Driver (
             if (write_start) begin
                 write_i <= 0;
                 write <= 1;
-                addr <= base_C;
+                addr <= base_C_prev;
                 writedata <= add_mat[0];
             end
             else if(write) begin
                 if (write_i == 4'd7) begin
                     write <= 0;
                 end
-                addr <= base_C + write_i * dim_b.block_count;
+                addr <= base_C_prev + (write_i + 1) * dim_b.block_count;
                 writedata <= add_mat[write_i + 1];
                 write_i <= write_i + 1;
             end
@@ -257,6 +273,7 @@ module MultAddr_Driver (
         else if (state == SEND_DUM && block_done) block_done_fsm <= 1;
         else if (state == SEND_ADD && add_done)  block_done_fsm <= 0;
     end
+
 
     always_comb begin
         add_start = 1'b0;
@@ -338,6 +355,23 @@ module fakememB
   end
 endmodule: fakememB
 
+module fakememC
+  (input logic read, write, clock, 
+   input logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] datain,
+   input logic [`ADDR_WIDTH-1:0] read_addr,
+   output logic [`BANDWIDTH-1:0][`DATA_WIDTH-1:0] data);
+
+  logic [1023:0][31:0] mem;
+
+  always_ff @(posedge clock) begin
+    if (read) data <= {mem[read_addr+7], mem[read_addr+6], mem[read_addr+5], mem[read_addr+4],
+                       mem[read_addr+3], mem[read_addr+2], mem[read_addr+1], mem[read_addr]};
+    else if (write) {mem[read_addr+7], mem[read_addr+6], mem[read_addr+5], mem[read_addr+4],
+                     mem[read_addr+3], mem[read_addr+2], mem[read_addr+1], mem[read_addr]} <= datain;
+    else data <= 'b0;
+  end
+endmodule: fakememC
+
 module SystolicArray_TB;
 
     // io with upper level controller
@@ -352,6 +386,7 @@ module SystolicArray_TB;
 
     fakememA FA(.read(memA.read), .clock, .data(readdataA), .read_addr(memA.address*8));
     fakememB FB(.read(memB.read), .clock, .data(readdataB), .read_addr(memB.address*8));
+    fakememC FC(.read(memC.read), .write(memC.write), .clock, .data(), .read_addr(memC.address*8), .datain(memC.writedata));
 
     initial begin
         clock = 1'b0;
