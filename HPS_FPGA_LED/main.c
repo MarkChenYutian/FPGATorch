@@ -25,11 +25,13 @@ refer to user manual chapter 7 for details about the demo
 int main() {
 	void *instruction_base;
 	void *fpga_mem_base;
-	int fd;
-	int loop_count;
+z	int loop_count;
 	int led_direction;
 	int led_mask;
 	void *h2p_lw_led_addr;
+	void *Mat_A_Base;
+	void *Mat_B_Base;
+	void *Mat_C_Base;
 	uint32_t Instruction;
 
 	// map the address space for the LED registers into user space so we can interact with them.
@@ -62,10 +64,10 @@ int main() {
 	Mat_B_Base = fpga_mem_base + ( ( unsigned long )( FPGA_MEM_B_BASE ) & ( unsigned long )( H2F_AXI_MASK ) );
 	Mat_C_Base = fpga_mem_base + ( ( unsigned long )( FPGA_MEM_C_BASE ) & ( unsigned long )( H2F_AXI_MASK ) );
 
-	Instruction = ((0x4 & 0x000F) << 28) | ((0x2 & 0x003F) << 21) | ((0x2 & 0x003F) << 14) | 0x0000
+	Instruction = ((0x4 & 0x000F) << 28) | ((0x2 & 0x003F) << 21) | ((0x2 & 0x003F) << 14) | 0x0000;
 	// toggle the LEDs a bit
-	float mat_a[] = {1f, 2f, 3f, 4f};
-	float scalar = 2f;
+	float mat_a[] = {1.0, 2.0, 3.0, 4.0};
+	float scalar = 2.0;
 	memcpy(Mat_A_Base, &mat_a, sizeof(float) * 4);
 	memcpy(Mat_B_Base, &scalar, sizeof(float));
 	*(uint32_t *)instruction_base = Instruction;
