@@ -51,17 +51,15 @@ module SystolicArray_Driver
                         .clock, .up(1'b1), .Q(count_stage));
   
   // Calculate A and B address
-  logic [`ADDR_WIDTH-1:0] addr_A1, addr_A2;
+  logic [`ADDR_WIDTH-1:0] addr_A;
   Accum #(`ADDR_WIDTH) AddrA1(.clock, .load(start), .en(en_count),
-                            .D(base_A), .offset(dim_col_A), .Q(addr_A1));
-  Accum #(`ADDR_WIDTH) AddrA2(.clock, .load(start), .en((en_count && count_stage >= 'd4)),
-                            .D(base_A + 'd4), .offset(dim_col_A), .Q(addr_A2));
+                            .D(base_A), .offset(dim_col_A), .Q(addr_A));
   
   logic [`ADDR_WIDTH-1:0] addr_B;
   Accum #(`ADDR_WIDTH) AddrB(.clock, .load(start), .en(en_count),
                             .D(base_B), .offset(dim_col_B), .Q(addr_B));
 
-  enum logic [3:0] {WAIT, FETCH_A1, FETCH_A2, FETCH_B1, FETCH_B2,
+  enum logic [3:0] {WAIT, FETCH_A, STORE_A, FETCH_B, STORE_B,
                     CLEANUP, DUM1, DUM2, SHIFT, DONE} state, nextState;
   
   always_ff @(posedge clock, posedge reset) begin
@@ -71,7 +69,7 @@ module SystolicArray_Driver
     end
   end
 
-  logic storeA, storeB1, storeB2, en_SA;
+  logic storeA, storeB, en_SA;
   logic [2:0] store_A_index;
 
   always_comb begin
@@ -80,62 +78,46 @@ module SystolicArray_Driver
     readB = 'b0;
     read_addr = 'b0;
     storeA = 'b0;
-    storeB1 = 'b0;
-    storeB2 = 'b0;
+    storeB = 'b0;
     en_SA = 'b0;
     store_A_index = 3'b0;
     done = 'b0;
     case (state)
       WAIT: begin
-        if (start) nextState = FETCH_A1;
+        if (start) nextState = FETCH_A;
         else nextState = WAIT;
       end
-      FETCH_A1: begin
-        nextState = FETCH_A2;
+      FETCH_A: begin
+        nextState = STORE_A;
         if (count_stage < 8) begin
           readA = 'b1;
-          read_addr = addr_A1;
+          read_addr = addr_A;
         end
       end
-      FETCH_A2: begin
-        nextState = FETCH_B1;
+      STORE_A: begin
+        nextState = FETCH_B;
         if (count_stage < 12) begin
-          if (count_stage >= 'd4) begin
-            readA = 'b1;
-            read_addr = addr_A2;
-          end
           storeA = 'b1;
           store_A_index = count_stage;
         end
       end
-      FETCH_B1: begin
-        nextState = FETCH_B2;
+      FETCH_B: begin
+        nextState = STORE_B;
         // After 8 iterations all B data are loaded, only needed to advance the buffer
-        if (count_stage < 12) begin
-          if (count_stage < 8) begin
+        if (count_stage < 8) begin
             readB = 'b1;
             read_addr = addr_B;
-          end
-          if (count_stage >= 'd4) begin
-            storeA = 'b1;
-            store_A_index = count_stage - 'd4;
-          end
         end
       end
-      FETCH_B2: begin
+      STORE_B: begin
         nextState = CLEANUP;
         if (count_stage < 8) begin
-          readB = 'b1;
-          read_addr = addr_B + 'd4;
-          storeB1 = 'b1;
+          storeB = 'b1;
         end
       end
       CLEANUP: begin
         nextState = DUM1;
         en_count = 'b1;
-        if (count_stage < 8) begin
-          storeB2 = 'b1;
-        end
       end
       DUM1: begin
         nextState = DUM2;
@@ -146,7 +128,7 @@ module SystolicArray_Driver
       SHIFT: begin
         if (count_stage == 'd25) nextState = DONE;
         else begin
-          nextState = FETCH_A1;
+          nextState = FETCH_A;
           en_SA = 'b1;
         end
       end
@@ -175,13 +157,13 @@ module SystolicArray_Driver
   generate
     // Shift and store
     for (k = 0; k < 8; k++) 
-      for (m = 0; m < 4; m++) begin: InputBuff_A_SR
+      for (m = 0; m < `BANDWIDTH; m++) begin: InputBuff_A_SR
         always_ff @(posedge clock) begin
           if (start) InputBuff_A[k][m] <= 0;
-          else if (en_SA && m == 3) begin
+          else if (en_SA && m == (`BANDWIDTH-1)) begin
             InputBuff_A[k][m] <= 'b0;
           end
-          else if (en_SA && m != 3) begin
+          else if (en_SA && m != (`BANDWIDTH-1)) begin
             InputBuff_A[k][m] <= InputBuff_A[k][m+1];
           end
           else if (storeA && store_A_index == k) begin
@@ -193,14 +175,10 @@ module SystolicArray_Driver
 
   genvar i;
   generate
-    for (i = 1; i <= 4; i++) begin: InputBuff_B1
-      SystolicArray_SR #(i) SR_B(.reset(start), .clock, .shift(en_SA), .store(storeB1),
+    for (i = 1; i <= 8; i++) begin: InputBuff_B1
+      SystolicArray_SR #(i) SR_B(.reset(start), .clock, .shift(en_SA), .store(storeB),
                                  .datain(readdata[i-1]), .dataout(SA_inputB[i-1]));
     end: InputBuff_B1
-     for (i = 5; i <= 8; i++) begin: InputBuff_B2
-      SystolicArray_SR #(i) SR_B(.reset(start), .clock, .shift(en_SA), .store(storeB2),
-                                 .datain(readdata[i-5]), .dataout(SA_inputB[i-1]));
-    end: InputBuff_B2
   endgenerate
 
   SystolicArray SA(.reset(start), .clock, .en(en_SA),
