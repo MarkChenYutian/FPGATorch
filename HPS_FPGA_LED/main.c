@@ -8,6 +8,7 @@ refer to user manual chapter 7 for details about the demo
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 #include <sys/mman.h>
 #include "hwlib.h"
 #include "socal/socal.h"
@@ -25,7 +26,7 @@ refer to user manual chapter 7 for details about the demo
 int main() {
 	void *instruction_base;
 	void *fpga_mem_base;
-z	int loop_count;
+	int loop_count;
 	int led_direction;
 	int led_mask;
 	void *h2p_lw_led_addr;
