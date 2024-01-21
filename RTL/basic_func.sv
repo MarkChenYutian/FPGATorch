@@ -14,7 +14,7 @@ module FSM
    output logic idle, save_op, save_scalar, save_Res,
    output logic [`SINGLE_ACCESS-1:0] save_A, save_B);
 
-  enum logic [2:0] {WAIT_OP, READ_SCALAR, READ, COMPUTE, WRITE} state, nextState;
+  enum logic [2:0] {WAIT_OP, MUL, READ_SCALAR, READ, COMPUTE, WRITE} state, nextState;
 
   logic [`ADDR_WIDTH-1:0] read_ptr, write_ptr, block_ptr;
   logic [(`DIM_WIDTH-`BANDWIDTH)*2-1:0] dim_total;
@@ -79,6 +79,14 @@ module FSM
           save_op = 1'b1;
           memA.read = 1'b1;
           memB.read = 1'b1;
+          memA.address = `DATAA_ADDR + block_ptr + read_ptr;
+          memB.address = `DATAB_ADDR + block_ptr + read_ptr;
+          read_next = 1'b1;
+        end else if (meta_data.op_code == MAT_MUL) begin
+          nextState = MUL;
+          save_op = 1'b1;
+          memA.read = memA_Mul.read;
+          memB.read = memB_Mul.read;
           memA.address = `DATAA_ADDR + block_ptr + read_ptr;
           memB.address = `DATAB_ADDR + block_ptr + read_ptr;
           read_next = 1'b1;
@@ -189,6 +197,8 @@ module MatMem
       end : multiple_bandwidth
     end : multiple_reg
   endgenerate
+
+  Mult matmul (.clock, .reset, .MatMul_en(op_code == MAT_MUL), .op(meta_data_reg), .finish(MatMul_done), .);
 
   always_comb begin
     case (op_code)

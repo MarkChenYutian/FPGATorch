@@ -1,8 +1,8 @@
 `define OP_ADDR 0
 `define SCALAR_ADDR 1
-`define DATAA_ADDR 10
-`define DATAB_ADDR 30
-`define RES_ADDR 50
+`define DATAA_ADDR 0
+`define DATAB_ADDR 0
+`define RES_ADDR 0
 
 `define ADDR_WIDTH 14
 `define DATA_WIDTH 32
