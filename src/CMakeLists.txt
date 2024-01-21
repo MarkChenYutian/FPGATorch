@@ -8,9 +8,9 @@ set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
 # Compiler settings
-if (FPGA) 
+#if (FPGA)
         set(CMAKE_CXX_COMPILER ${CROSS_COMPILE}c++)
-endif()
+#endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
 
@@ -68,3 +68,5 @@ set_property(TARGET CPUTorch PROPERTY CXX_STANDARD 11)
 target_compile_definitions(FPGATorch PUBLIC ONFPGA)
 target_compile_definitions(FPGATorch PUBLIC ${ALT_DEVICE_FAMILY})
 
+target_compile_options(CPUTorch PRIVATE -O2 -ffast-math -fno-math-errno)
+target_compile_options(FPGATorch PRIVATE -O2 -ffast-math -fno-math-errno)

@@ -25,6 +25,7 @@
 #define MAT_SCAL_ADD (4)
 // #define MAT_SCAL_INV (5)
 #define MAT_MUL (6)
+#define MAT_ELE_MUL (7)
 // #define MAT_TRAS (7)
 // #define REDUCE_SUM (8)
 
@@ -49,7 +50,7 @@ int MMap_Init() {
     close( fd );
     return( 1 );
   }
-  Instruction_Base = virtual_base + ( ( unsigned long )(ALT_LWFPGASLVS_OFST) & ( unsigned long)( HW_REGS_MASK ) );
+  Instruction_Base = static_cast<char*>(virtual_base) + ( ( unsigned long )(ALT_LWFPGASLVS_OFST) & ( unsigned long)( HW_REGS_MASK ) );
 
   fpga_mem_base = mmap( NULL, H2F_AXI_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, H2F_AXI_BASE );
 
@@ -58,9 +59,9 @@ int MMap_Init() {
     close( fd );
     return( 1 );
   }
-  Mat_A_Base = fpga_mem_base + ( ( unsigned long )( FPGA_MEM_A_BASE ) & ( unsigned long )( H2F_AXI_MASK ) );
-  Mat_B_Base = fpga_mem_base + ( ( unsigned long )( FPGA_MEM_B_BASE ) & ( unsigned long )( H2F_AXI_MASK ) );
-  Mat_C_Base = fpga_mem_base + ( ( unsigned long )( FPGA_MEM_C_BASE ) & ( unsigned long )( H2F_AXI_MASK ) );
+  Mat_A_Base = static_cast<char*>(fpga_mem_base) + ( ( unsigned long )( FPGA_MEM_A_BASE ) & ( unsigned long )( H2F_AXI_MASK ) );
+  Mat_B_Base = static_cast<char*>(fpga_mem_base) + ( ( unsigned long )( FPGA_MEM_B_BASE ) & ( unsigned long )( H2F_AXI_MASK ) );
+  Mat_C_Base = static_cast<char*>(fpga_mem_base) + ( ( unsigned long )( FPGA_MEM_C_BASE ) & ( unsigned long )( H2F_AXI_MASK ) );
   return 0;
 }
 
