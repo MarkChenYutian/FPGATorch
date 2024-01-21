@@ -6,7 +6,7 @@ def generate_matrix(size):
 
 def main():
     # Size of the matrices
-    size = 8
+    size = 16
 
     # Generate two 8x8 matrices
     matrix1 = generate_matrix(size)
